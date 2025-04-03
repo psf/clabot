@@ -2,11 +2,27 @@ from collections import namedtuple
 from django_github_app.routing import GitHubRouter
 from django.db.models import Q
 
-from cla.models import PreApprovedAccount, Signature
+from cla.models import Agreement, PendingSignature, PreApprovedAccount, RepositoryMapping, Signature
 
 gh = GitHubRouter()
 
 Author = namedtuple("Author", "login id node_id email")
+
+SIGNED_BADGE = (
+    "https://img.shields.io/badge/"
+    "CLA%20Signed-FAE085"
+    "?style=flat-square"
+    "&logo=Python"
+    "&logoColor=FAE085"
+)
+NOT_SIGNED_BADGE = (
+    "https://img.shields.io/badge/"
+    "CLA%20Not%20Signed-fa858b"
+    "?style=flat-square"
+    "&logo=Python"
+    "&logoColor=ffffff"
+)
+SENTINEL_MARKER = "<!-- CLA BOT SIGNING COMMENT DO NOT EDIT -->"
 
 
 @gh.event("pull_request", action="opened")
@@ -50,10 +66,20 @@ async def handle_pull_request(event, gh, *args, **kwargs):
         # TODO: HTTP 400
         raise Exception()
 
-    # TODO: Find Agreement for the repository
-    # We probably want to mark an Agreement as "default",
-    # Then allow for mapping specific agreements onto
-    # installed repositories
+    # Find mapped Agreement for the repository, or default
+    repository_mapping = (
+        await RepositoryMapping.objects.select_related("agreement")
+        .filter(github_repository__repository_id=target_repository_id)
+        .afirst()
+    )
+    if repository_mapping is None:
+        agreement = await Agreement.objects.filter(default=True).afirst()
+    else:
+        agreement = repository_mapping.agreement
+
+    if agreement is None:
+        # TODO: HTTP 204?
+        return
 
     # Collect all authors from this commit
     # TODO: Should we consider "Co-authored-by"???
@@ -84,6 +110,75 @@ async def handle_pull_request(event, gh, *args, **kwargs):
 
     authors = authors - pre_approved_accounts
 
-    # TODO: Check for CLAs for each remaing author
+    needs_signing = set()
+    # Check for the correct Agreement Signature for each remaing author
+    for author in authors:
+        signature = await Signature.objects.filter(
+            agreement=agreement, email_address=author.email
+        ).afirst()
+        if signature is None:
+            await PendingSignature.objects.aupdate_or_create(agreement=agreement, github_repository_id=target_repository_id, email_address=author.email, ref=pull_request_head_sha)
+            needs_signing.add(author)
+        elif signature.github_id is None or signature.github_node_id is None:
+            await Signature.objects.filter(
+                agreement=agreement, email_address=author.email
+            ).aupdate(github_id=author.id, github_node_id=author.node_id)
 
-    # TODO: Send message or apply label
+    # Set Commit Status Check
+    if needs_signing:
+        await gh.post(
+            f"/repos/{target_repository_full_name}/statuses/{pull_request_head_sha}",
+            data={
+                "state": "failure",
+                "description": "Please sign our Contributor License Agreement.",
+                "context": "CLA Signing",
+            },
+        )
+    else:
+        await gh.post(
+            f"/repos/{target_repository_full_name}/statuses/{pull_request_head_sha}",
+            data={
+                "state": "success",
+                "description": "The Contributor License Agreement is signed.",
+                "context": "CLA Signing",
+            },
+        )
+
+    # Construct comments
+    if needs_signing:
+        emails = "\n".join([f"* {author.email}\n" for author in needs_signing])
+        message = (
+            "The following commit authors need to sign "
+            "the Contributor License Agreement:\n\n"
+            f"{emails}\n"
+            f"[![CLA signed]({NOT_SIGNED_BADGE})](https://ngrok.io)"
+            f"{SENTINEL_MARKER}"
+        )
+    else:
+        message = (
+            "All commit authors signed the Contributor License Agreement.\n\n"
+            f"[![CLA signed]({SIGNED_BADGE})](https://ngrok.io)"
+            f"{SENTINEL_MARKER}"
+        )
+
+    # Check for existing comment
+    existing_comment = None
+    async for comment in gh.getiter(
+        f"/repos/{target_repository_full_name}/issues/{pull_request_number}/comments"
+    ):
+        if comment["body"].endswith(SENTINEL_MARKER):
+            existing_comment = comment
+            break
+
+    # If we have an existing comment, update it, otherwise send the comment
+    if existing_comment:
+        if existing_comment["body"] != message:
+            await gh.post(
+                f"/repos/{target_repository_full_name}/issues/comments/{existing_comment['id']}",
+                data={"body": message},
+            )
+    else:
+        await gh.post(
+            f"/repos/{target_repository_full_name}/issues/{pull_request_number}/comments",
+            data={"body": message},
+        )
