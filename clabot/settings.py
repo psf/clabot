@@ -51,7 +51,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "psfclabot.urls"
+ROOT_URLCONF = "clabot.urls"
 
 TEMPLATES = [
     {
@@ -70,8 +70,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "psfclabot.wsgi.application"
-ASGI_APPLICATION = "psfclabot.asgi.application"
+WSGI_APPLICATION = "clabot.wsgi.application"
+ASGI_APPLICATION = "clabot.asgi.application"
 
 
 # Database

@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import include, path
 from django_github_app.views import AsyncWebhookView
 
-from psfclabot import views
+from clabot import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
