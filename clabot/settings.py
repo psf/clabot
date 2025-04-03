@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "django_github_app",
     "markdownx",
     # Our Apps
+    "github_auth",
     "cla",
 ]
 

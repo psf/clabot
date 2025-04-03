@@ -6,8 +6,7 @@ from clabot import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("auth/", views.github_login),
-    path("auth/gh/", views.github_callback),
+    path("auth/", include("github_auth.urls")),
     path("gh/", AsyncWebhookView.as_view()),
     path("markdownx/", include("markdownx.urls")),
     path("", views.HomePageView.as_view()),
