@@ -2,6 +2,7 @@ from collections import namedtuple
 from django_github_app.routing import GitHubRouter
 from django.conf import settings
 from django.db.models import Q
+from django.http import HttpResponse
 
 from cla.models import (
     Agreement,
@@ -10,26 +11,13 @@ from cla.models import (
     RepositoryMapping,
     Signature,
 )
+from cla.constants import SIGNED_BADGE, NOT_SIGNED_BADGE, SENTINEL_MARKER
+from cla.status import fail_status_check, succeed_status_check
+from cla.comments import post_or_update_fail_comment, post_or_update_success_comment
 
 gh = GitHubRouter()
 
 Author = namedtuple("Author", "login id node_id email")
-
-SIGNED_BADGE = (
-    "https://img.shields.io/badge/"
-    "CLA%20Signed-FAE085"
-    "?style=flat-square"
-    "&logo=Python"
-    "&logoColor=FAE085"
-)
-NOT_SIGNED_BADGE = (
-    "https://img.shields.io/badge/"
-    "CLA%20Not%20Signed-fa858b"
-    "?style=flat-square"
-    "&logo=Python"
-    "&logoColor=ffffff"
-)
-SENTINEL_MARKER = "<!-- CLA BOT SIGNING COMMENT DO NOT EDIT -->"
 
 
 @gh.event("pull_request", action="opened")
@@ -85,8 +73,7 @@ async def handle_pull_request(event, gh, *args, **kwargs):
         agreement = repository_mapping.agreement
 
     if agreement is None:
-        # TODO: HTTP 204?
-        return
+        return HttpResponse("OK")
 
     # Collect all authors from this commit
     # TODO: Should we consider "Co-authored-by"???
@@ -138,59 +125,19 @@ async def handle_pull_request(event, gh, *args, **kwargs):
 
     # Set Commit Status Check
     if needs_signing:
-        await gh.post(
-            f"/repos/{target_repository_full_name}/statuses/{pull_request_head_sha}",
-            data={
-                "state": "failure",
-                "description": "Please sign our Contributor License Agreement.",
-                "context": "CLA Signing",
-            },
-        )
+        await fail_status_check(gh, target_repository_full_name, pull_request_head_sha)
     else:
-        await gh.post(
-            f"/repos/{target_repository_full_name}/statuses/{pull_request_head_sha}",
-            data={
-                "state": "success",
-                "description": "The Contributor License Agreement is signed.",
-                "context": "CLA Signing",
-            },
+        await succeed_status_check(
+            gh, target_repository_full_name, pull_request_head_sha
         )
 
-    # Construct comments
+    # Send/Update comments
     if needs_signing:
-        emails = "\n".join([f"* {author.email}" for author in needs_signing])
-        message = (
-            "The following commit authors need to sign "
-            "the Contributor License Agreement:\n\n"
-            f"{emails}\n\n"
-            f"[![CLA signed]({NOT_SIGNED_BADGE})]({settings.EXTERNAL_URL})"
-            f"{SENTINEL_MARKER}"
+        email_addresses = [author.email for author in needs_signing]
+        await post_or_update_fail_comment(
+            gh, email_addresses, target_repository_full_name, pull_request_number
         )
     else:
-        message = (
-            "All commit authors signed the Contributor License Agreement.\n\n"
-            f"[![CLA signed]({SIGNED_BADGE})]({settings.EXTERNAL_URL})"
-            f"{SENTINEL_MARKER}"
-        )
-
-    # Check for existing comment
-    existing_comment = None
-    async for comment in gh.getiter(
-        f"/repos/{target_repository_full_name}/issues/{pull_request_number}/comments"
-    ):
-        if comment["body"].endswith(SENTINEL_MARKER):
-            existing_comment = comment
-            break
-
-    # If we have an existing comment, update it, otherwise send the comment
-    if existing_comment:
-        if existing_comment["body"] != message:
-            await gh.post(
-                f"/repos/{target_repository_full_name}/issues/comments/{existing_comment['id']}",
-                data={"body": message},
-            )
-    else:
-        await gh.post(
-            f"/repos/{target_repository_full_name}/issues/{pull_request_number}/comments",
-            data={"body": message},
+        await post_or_update_success_comment(
+            gh, target_repository_full_name, pull_request_number
         )
