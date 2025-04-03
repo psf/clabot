@@ -87,8 +87,6 @@ ASGI_APPLICATION = "clabot.asgi.application"
 
 
 DATABASES = {"default": env.dj_db_url("DATABASE_URL")}
-DATABASES["default"]["CONN_MAX_AGE"] = 600
-DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
 
 LANGUAGE_CODE = "en-us"
 
