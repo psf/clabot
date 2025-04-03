@@ -1,7 +1,6 @@
 import secrets
 from collections import defaultdict, namedtuple
 
-
 import markdown
 import requests
 from asgiref.sync import sync_to_async
@@ -14,8 +13,8 @@ from django_github_app.github import AsyncGitHubAPI
 from django_github_app.models import Repository
 from oauthlib.oauth2 import WebApplicationClient
 
-from cla.models import Agreement, PendingSignature, Signature
 from cla.events import handle_pull_request
+from cla.models import Agreement, PendingSignature, Signature
 
 
 class HomePageView(TemplateView):
