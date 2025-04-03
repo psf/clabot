@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Extensions
     "django_github_app",
+    "markdownx",
     # Our Apps
     "cla",
 ]
@@ -54,7 +55,9 @@ ROOT_URLCONF = "psfclabot.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [
+          "templates",
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [

@@ -2,10 +2,22 @@ import secrets
 
 from django.conf import settings
 from django.http import HttpResponseRedirect
+from django.views.generic import TemplateView
+
+import requests
+import markdown
 
 from oauthlib.oauth2 import WebApplicationClient
-import requests
 
+from cla.models import Agreement
+
+class HomePageView(TemplateView):
+    template_name = 'home.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["agreement"] = markdown.markdown(Agreement.objects.filter(default=True).first().document)
+        return context
 
 def github_login(request):
     client = WebApplicationClient(settings.GITHUB_OAUTH_APPLICATION_ID)

@@ -1,5 +1,6 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from markdownx import urls as markdownx
 
 from django_github_app.views import AsyncWebhookView
 
@@ -11,4 +12,6 @@ urlpatterns = [
     path("auth/", views.github_login),
     path("auth/gh/", views.github_callback),
     path("gh/", AsyncWebhookView.as_view()),
+    path('markdownx/', include('markdownx.urls')),
+    path("", views.HomePageView.as_view()),
 ]

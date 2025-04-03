@@ -3,6 +3,7 @@ dj-database-url
 daphne
 django
 django-github-app
+django-markdownx
 environs
 psycopg2-binary
 oauthlib

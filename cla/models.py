@@ -3,6 +3,8 @@ import uuid
 
 from django.db import models
 
+from markdownx.models import MarkdownxField
+
 from django_github_app.models import Repository
 
 
@@ -14,6 +16,7 @@ class Agreement(models.Model):
     title = models.CharField(max_length=512)
     description = models.TextField()
     agreement_txt = models.TextField()
+    document = MarkdownxField()
 
     default = models.BooleanField(default=False)
 
