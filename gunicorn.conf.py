@@ -1,5 +1,6 @@
+bind = "unix:/var/run/cabotage/cabotage.sock"
 worker_class = "clabot.workers.UvicornWorker"
-workers = 2
+workers = 4
 
 backlog = 2048
 preload_app = True
