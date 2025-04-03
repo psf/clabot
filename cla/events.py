@@ -31,14 +31,7 @@ async def handle_pull_request(event, gh, *args, **kwargs):
     )
     pull_request_url = event.data.get("pull_request", {}).get("html_url")
     target_repository_id = event.data.get("repository", {}).get("id")
-    target_repository_owner_id = (
-        event.data.get("repository", {}).get("owner", {}).get("id")
-    )
-    target_repository_owner_name = (
-        event.data.get("repository", {}).get("owner", {}).get("login")
-    )
     target_repository_full_name = event.data.get("repository", {}).get("full_name")
-    target_repository_name = event.data.get("repository", {}).get("name")
 
     if any(
         [
@@ -50,10 +43,7 @@ async def handle_pull_request(event, gh, *args, **kwargs):
                 pull_request_head_sha,
                 pull_request_url,
                 target_repository_id,
-                target_repository_owner_id,
-                target_repository_owner_name,
                 target_repository_full_name,
-                target_repository_name,
             ]
         ]
     ):
