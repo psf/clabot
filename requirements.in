@@ -10,4 +10,5 @@ oauthlib
 psycopg2-binary
 requests
 sentry_sdk
+uvicorn
 whitenoise
