@@ -1,15 +1,12 @@
 import secrets
 
-from django.contrib import messages
-from django.shortcuts import render
-from django import forms
-from django.conf import settings
-from django.http import HttpResponseRedirect
-from django.views.generic import TemplateView
-
-import requests
 import markdown
-
+import requests
+from django.conf import settings
+from django.contrib import messages
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
+from django.views.generic import TemplateView
 from oauthlib.oauth2 import WebApplicationClient
 
 from cla.models import Agreement, PendingSignature, Signature

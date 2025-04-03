@@ -1,5 +1,6 @@
 from django.conf import settings
-from cla.constants import NOT_SIGNED_BADGE, SENTINEL_MARKER, SENTINEL_MARKER
+
+from cla.constants import NOT_SIGNED_BADGE, SENTINEL_MARKER, SIGNED_BADGE
 
 
 async def post_or_update_comment(

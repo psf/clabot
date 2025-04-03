@@ -2,10 +2,8 @@
 import uuid
 
 from django.db import models
-
-from markdownx.models import MarkdownxField
-
 from django_github_app.models import Repository
+from markdownx.models import MarkdownxField
 
 
 class Agreement(models.Model):

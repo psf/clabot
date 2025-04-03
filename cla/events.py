@@ -1,9 +1,10 @@
 from collections import namedtuple
-from django_github_app.routing import GitHubRouter
-from django.conf import settings
+
 from django.db.models import Q
 from django.http import HttpResponse
+from django_github_app.routing import GitHubRouter
 
+from cla.comments import post_or_update_fail_comment, post_or_update_success_comment
 from cla.models import (
     Agreement,
     PendingSignature,
@@ -11,9 +12,7 @@ from cla.models import (
     RepositoryMapping,
     Signature,
 )
-from cla.constants import SIGNED_BADGE, NOT_SIGNED_BADGE, SENTINEL_MARKER
 from cla.status import fail_status_check, succeed_status_check
-from cla.comments import post_or_update_fail_comment, post_or_update_success_comment
 
 gh = GitHubRouter()
 

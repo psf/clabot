@@ -1,6 +1,6 @@
-import environs
-
 from pathlib import Path
+
+import environs
 
 # Fetch configuration from the environment
 env = environs.Env()

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from cla.models import RepositoryMapping, Agreement, Signature, PreApprovedAccount
+from cla.models import Agreement, PreApprovedAccount, RepositoryMapping, Signature
 
 
 class AgreementAdmin(admin.ModelAdmin):
