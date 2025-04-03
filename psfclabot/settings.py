@@ -36,9 +36,7 @@ INSTALLED_APPS = [
     # Extensions
     "django_github_app",
     # Our Apps
-    "agreements",
-    "repositories",
-    "signatures",
+    "cla",
 ]
 
 MIDDLEWARE = [
