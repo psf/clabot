@@ -2,7 +2,13 @@ from collections import namedtuple
 from django_github_app.routing import GitHubRouter
 from django.db.models import Q
 
-from cla.models import Agreement, PendingSignature, PreApprovedAccount, RepositoryMapping, Signature
+from cla.models import (
+    Agreement,
+    PendingSignature,
+    PreApprovedAccount,
+    RepositoryMapping,
+    Signature,
+)
 
 gh = GitHubRouter()
 
@@ -117,7 +123,12 @@ async def handle_pull_request(event, gh, *args, **kwargs):
             agreement=agreement, email_address=author.email
         ).afirst()
         if signature is None:
-            await PendingSignature.objects.aupdate_or_create(agreement=agreement, github_repository_id=target_repository_id, email_address=author.email, ref=pull_request_head_sha)
+            await PendingSignature.objects.aupdate_or_create(
+                agreement=agreement,
+                github_repository_id=target_repository_id,
+                email_address=author.email,
+                ref=pull_request_head_sha,
+            )
             needs_signing.add(author)
         elif signature.github_id is None or signature.github_node_id is None:
             await Signature.objects.filter(
