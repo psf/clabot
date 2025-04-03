@@ -20,6 +20,7 @@ SECRET_KEY = "django-insecure-p@)^=_f#2!ucyi)x=b)0yt0-1q+taz2@89qsajpn$v3jjlimfd
 DEBUG = True
 
 ALLOWED_HOSTS = ["localhost", "python-clabot.ngrok.io"]
+CSRF_TRUSTED_ORIGINS = ["http://localhost:8000", "https://python-clabot.ngrok.io"]
 
 
 # Application definition
