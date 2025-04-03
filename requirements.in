@@ -1,0 +1,10 @@
+black
+daphne
+dj-database-url
+django
+django-github-app
+django-markdownx
+environs
+oauthlib
+psycopg2-binary
+requests
