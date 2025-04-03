@@ -1,0 +1,7 @@
+black
+dj-database-url
+daphne
+django
+django-github-app
+environs
+psycopg2-binary
