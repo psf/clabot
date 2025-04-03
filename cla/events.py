@@ -1,5 +1,6 @@
 from collections import namedtuple
 from django_github_app.routing import GitHubRouter
+from django.conf import settings
 from django.db.models import Q
 
 from cla.models import (
@@ -157,18 +158,18 @@ async def handle_pull_request(event, gh, *args, **kwargs):
 
     # Construct comments
     if needs_signing:
-        emails = "\n".join([f"* {author.email}\n" for author in needs_signing])
+        emails = "\n".join([f"* {author.email}" for author in needs_signing])
         message = (
             "The following commit authors need to sign "
             "the Contributor License Agreement:\n\n"
-            f"{emails}\n"
-            f"[![CLA signed]({NOT_SIGNED_BADGE})](https://ngrok.io)"
+            f"{emails}\n\n"
+            f"[![CLA signed]({NOT_SIGNED_BADGE})]({settings.EXTERNAL_URL})"
             f"{SENTINEL_MARKER}"
         )
     else:
         message = (
             "All commit authors signed the Contributor License Agreement.\n\n"
-            f"[![CLA signed]({SIGNED_BADGE})](https://ngrok.io)"
+            f"[![CLA signed]({SIGNED_BADGE})]({settings.EXTERNAL_URL})"
             f"{SENTINEL_MARKER}"
         )
 

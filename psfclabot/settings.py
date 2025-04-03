@@ -57,7 +57,7 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
-          "templates",
+            "templates",
         ],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -120,6 +120,8 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+EXTERNAL_URL = env.str("EXTERNAL_URL", default="https://python-clabot.ngrok.io")
 
 # django-github-app
 GITHUB_APP = {

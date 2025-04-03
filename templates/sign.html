@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="document-container">
+  {{ agreement|safe }}
+
+  <form method="POST">
+    {% csrf_token %}
+    <div class="button-container">
+      <button type="submit" class="button sign-button">Sign</button>
+      <p>
+        On behalf of
+        <span style="font-weight: 600;">{{ request.session.username }}</span>
+        &lt;<span style="font-weight: 600;">{{ email_address }}</span>&gt;
+      </p>
+    </div>
+  </form>
+</div>
+{% endblock %}

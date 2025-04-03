@@ -1,5 +1,8 @@
 import secrets
 
+from django.contrib import messages
+from django.shortcuts import render
+from django import forms
 from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.views.generic import TemplateView
@@ -9,15 +12,80 @@ import markdown
 
 from oauthlib.oauth2 import WebApplicationClient
 
-from cla.models import Agreement
+from cla.models import Agreement, PendingSignature, Signature
+
 
 class HomePageView(TemplateView):
-    template_name = 'home.html'
+    template_name = "home.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["agreement"] = markdown.markdown(Agreement.objects.filter(default=True).first().document)
+        context["agreement"] = markdown.markdown(
+            Agreement.objects.filter(default=True).first().document
+        )
         return context
+
+
+class AwaitingSignatureView(TemplateView):
+    template_name = "awaiting_signature.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["pending_signatures"] = PendingSignature.objects.filter(
+            email_address__in=[e["email"] for e in self.request.session["emails"]]
+        )
+        context["verified_emails"] = [
+            e["email"].lower() for e in self.request.session["emails"] if e["verified"]
+        ]
+        return context
+
+
+def sign(request):
+    agreement_id = request.GET.get("agreement_id")
+    email_address = request.GET.get("email_address")
+
+    pending_signatures = PendingSignature.objects.filter(
+        agreement_id=agreement_id, email_address__iexact=email_address
+    ).all()
+
+    if len(pending_signatures) == 0:
+        messages.info(request, "No such agreement awaiting signature.")
+        return HttpResponseRedirect("/")
+
+    if email_address.lower() not in [
+        e["email"].lower() for e in request.session["emails"] if e["verified"]
+    ]:
+        messages.info(
+            request, "Cannot sign using an email that has not been verified on GitHub."
+        )
+        return HttpResponseRedirect("/")
+
+    if request.method == "POST":
+        Signature.objects.create(
+            agreement=pending_signatures[0].agreement,
+            github_login=request.session["github_login"],
+            github_id=request.session["github_id"],
+            github_node_id=request.session["github_node_id"],
+            email_address=email_address,
+        )
+        PendingSignature.objects.filter(
+            agreement_id=agreement_id, email_address__iexact=email_address
+        ).delete()
+        messages.info(
+            request,
+            f"Successfully signed {pending_signatures[0].agreement} for {email_address}",
+        )
+        return HttpResponseRedirect("/awaiting/")
+
+    return render(
+        request,
+        "sign.html",
+        context={
+            "agreement": markdown.markdown(pending_signatures[0].agreement.document),
+            "email_address": email_address,
+        },
+    )
+
 
 def github_login(request):
     client = WebApplicationClient(settings.GITHUB_OAUTH_APPLICATION_ID)
@@ -63,6 +131,11 @@ def github_callback(request):
         headers={"Authorization": f'token {client.token["access_token"]}'},
     )
 
-    print(user_data.json())
-    print(user_email_data.json())
-    return HttpResponseRedirect("/")
+    request.session["username"] = user_data.json()["login"]
+    request.session["emails"] = user_email_data.json()
+
+    request.session["github_login"] = user_data.json()["login"]
+    request.session["github_id"] = user_data.json()["id"]
+    request.session["github_node_id"] = user_data.json()["node_id"]
+
+    return HttpResponseRedirect("/awaiting/")

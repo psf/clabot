@@ -9,8 +9,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <style>
-      * { font-family: "Source Serif 4", serif; }
-      body { max-width: 768px; margin: 0 auto; padding: 1rem;}
+      * {
+        font-family: "Source Serif 4", serif;
+      }
+      body {
+        max-width: 768px;
+        margin: 0 auto;
+        padding: 1rem;
+      }
+      a:link, a:visited {
+        color: blue;
+      }
+      .button-container {
+        text-align: center;
+        margin: 3rem auto;
+      }
+      .button {
+        padding: 1rem;
+        background-color: #376080;
+        border-radius: .5rem;
+        color: white;
+      }
+      a.button {
+        color: white;
+        text-decoration: none;
+      }
+      .sign-button {
+        font-size: 2rem;
+        padding-left: 3rem;
+        padding-right: 3rem;
+      }
+      .messages {
+        padding-left: 1rem;
+        padding-right: 1rem;
+        padding-top: .5rem;
+        padding-bottom: .5rem;
+        background-color: #FAE085;
+        border-radius: .5rem;
+        text-align: center;
+      }
+      button {
+        -webkit-appearance: none;
+        border-radius: 0;
+        text-align: inherit;
+        background: none;
+        box-shadow: none;
+        padding: 0;
+        cursor: pointer;
+        border: none;
+        color: inherit;
+        font: inherit;
+      }
     </style>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,6 +68,13 @@
   </head>
 
   <body>
+  {% if messages %}
+  <div class="messages">
+    {% for message in messages %}
+    <p>{{ message }}</p>
+    {% endfor %}
+  </div>
+  {% endif %}
   {% block content %}{% endblock %}
   </body>
 

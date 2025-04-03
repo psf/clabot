@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="document-container">
+  <h1>Welcome, {{ request.session.username }}.</h1>
+  {% if pending_signatures %}
+    <p>Your contributions under the following agreements are awaiting your signature.</p>
+    {% regroup pending_signatures by agreement as pending_signatures_by_agreement %}
+    {% for agreement in pending_signatures_by_agreement %}
+      {% regroup agreement.list by email_address as pending_for_agreement_by_email %}
+      {% for email in pending_for_agreement_by_email %}
+        <h2>{{ agreement.grouper }}</h2>
+        {% regroup email.list by ref as pending_for_agreement_by_ref %}
+        {% regroup email.list by github_repository_id as pending_for_agreement_by_repo %}
+        <p>
+          For
+          {{ pending_for_agreement_by_ref|length }} commits
+          across {{ pending_for_agreement_by_repo|length }} repositories
+          with email address <span style="font-weight: 600;">{{ email.grouper }}</span>.
+        </p>
+        {% if email.grouper|lower not in verified_emails  %}
+          <p>
+            <b>
+              Cannot proceed, {{ email.grouper }}
+              is not <a href="https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-email-preferences/verifying-your-email-address">verified with GitHub</a>.
+              Please complete verification and return here to sign.
+            </b>
+          </p>
+        {% else %}
+          <div class="button-container">
+            <a class="button" href="/sign?agreement_id={{ agreement.grouper.id }}&email_address={{ email.grouper }}">Review and Sign</a>
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+  {% else %}
+  <i>There are no pending CLAs for you to sign, have a wonderful day!</i>
+  {% endif %}
+</div>
+{% endblock %}

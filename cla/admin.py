@@ -13,11 +13,19 @@ class PreApprovedAccountAdmin(admin.ModelAdmin):
 
 
 class RepositoryMappingAdmin(admin.ModelAdmin):
-    list_display = ["github_repository__full_name", "agreement__title"]
+    list_display = ["github_repository__full_name", "agreement"]
 
 
 class SignatureAdmin(admin.ModelAdmin):
-    pass
+    list_display = ["github_login", "email_address", "agreement"]
+    readonly_fields = [
+        "agreement",
+        "github_login",
+        "github_id",
+        "github_node_id",
+        "email_address",
+        "created_at",
+    ]
 
 
 admin.site.register(Agreement, AgreementAdmin)

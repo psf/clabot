@@ -94,4 +94,4 @@ class Signature(models.Model):
     email_address = models.EmailField(max_length=512)
 
     def __str__(self):
-        return f"{self.github_login} - {self.email_address} - {self.agreement.title} @ {self.created_at}"
+        return f"{self.email_address} - {self.agreement.title}"
