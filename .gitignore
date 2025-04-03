@@ -1,3 +1,5 @@
 /venv
 /.env
 *.swp
+/.state
+/staticfiles

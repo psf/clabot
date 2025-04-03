@@ -37,7 +37,7 @@ async def post_or_update_fail_comment(
         "The following commit authors need to sign "
         "the Contributor License Agreement:\n\n"
         f"{emails}\n\n"
-        f"[![CLA signed]({NOT_SIGNED_BADGE})]({settings.EXTERNAL_URL})"
+        f"[![CLA signed]({NOT_SIGNED_BADGE})]({settings.SITE_URL})"
         f"{SENTINEL_MARKER}"
     )
     await post_or_update_comment(
@@ -50,7 +50,7 @@ async def post_or_update_success_comment(
 ):
     message = (
         "All commit authors signed the Contributor License Agreement.\n\n"
-        f"[![CLA signed]({SIGNED_BADGE})]({settings.EXTERNAL_URL})"
+        f"[![CLA signed]({SIGNED_BADGE})]({settings.SITE_URL})"
         f"{SENTINEL_MARKER}"
     )
     await post_or_update_comment(

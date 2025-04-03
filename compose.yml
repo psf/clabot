@@ -1,0 +1,30 @@
+services:
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_USER: clabot
+      POSTGRES_PASSWORD: clabot
+      POSTGRES_DB: clabot
+      POSTGRES_HOST_AUTH_METHOD: trust  # never do this in production!
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "clabot", "-d", "clabot"]
+      interval: 1s
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: clabot:docker-compose
+    command: python manage.py runserver 0.0.0.0:8000
+    environment: &base_environment
+      DEBUG: "True"
+      DJANGO_SECRET_KEY: "deadbeef"
+      DATABASE_URL: postgresql://clabot:clabot@postgres:5432/clabot
+    ports:
+      - "8000:8000"
+    volumes: &base_volumes
+      - .:/code
+    depends_on:
+      postgres:
+        condition: service_healthy
+

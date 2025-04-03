@@ -5,6 +5,9 @@ django
 django-github-app
 django-markdownx
 environs
+gunicorn
 oauthlib
 psycopg2-binary
 requests
+sentry_sdk
+whitenoise

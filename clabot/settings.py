@@ -6,22 +6,32 @@ import environs
 env = environs.Env()
 env.read_env()
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-p@)^=_f#2!ucyi)x=b)0yt0-1q+taz2@89qsajpn$v3jjlimfd"
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+SECRET_KEY = env.str("DJANGO_SECRET_KEY")
 
 ALLOWED_HOSTS = ["localhost", "python-clabot.ngrok.io"]
 CSRF_TRUSTED_ORIGINS = ["http://localhost:8000", "https://python-clabot.ngrok.io"]
 
+APPEND_SLASH = True
+
+SENTRY_DSN = env("SENTRY_DSN", default=None)
+
+if SENTRY_DSN is not None:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        traces_sample_rate=1.0,
+        profiles_sample_rate=1.0,
+        send_default_pii=True,
+    )
+
+DEBUG = env.bool("DEBUG", default=False)
+
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["localhost"])
+CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=["http://localhost"])
+SITE_URL = env("DJANGO_SITE_URL", default="http://localhost:8000")
 
 # Application definition
 
@@ -44,6 +54,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -75,33 +86,10 @@ WSGI_APPLICATION = "clabot.wsgi.application"
 ASGI_APPLICATION = "clabot.asgi.application"
 
 
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
 DATABASES = {"default": env.dj_db_url("DATABASE_URL")}
-
-
-# Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
-
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
-]
-
-
-# Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
+DATABASES["default"]["ATOMIC_REQUESTS"] = True
+DATABASES["default"]["CONN_MAX_AGE"] = 600
+DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
 
 LANGUAGE_CODE = "en-us"
 
@@ -111,29 +99,30 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-EXTERNAL_URL = env.str("EXTERNAL_URL", default="https://python-clabot.ngrok.io")
-
 # django-github-app
 GITHUB_APP = {
-    "APP_ID": env.str("GITHUB_APP_ID"),
-    "CLIENT_ID": env.str("GITHUB_CLIENT_ID"),
-    "NAME": env.str("GITHUB_NAME"),
-    "PRIVATE_KEY": env.str("GITHUB_PRIVATE_KEY"),
-    "WEBHOOK_SECRET": env.str("GITHUB_WEBHOOK_SECRET"),
+    "APP_ID": env.str("GITHUB_APP_ID", default=None),
+    "CLIENT_ID": env.str("GITHUB_CLIENT_ID", default=None),
+    "NAME": env.str("GITHUB_NAME", default=None),
+    "PRIVATE_KEY": env.str("GITHUB_PRIVATE_KEY", default=None),
+    "WEBHOOK_SECRET": env.str("GITHUB_WEBHOOK_SECRET", default=None),
     "WEBHOOK_TYPE": "async",
 }
 
 # GitHub oauth
-GITHUB_OAUTH_APPLICATION_ID = env.str("GITHUB_OAUTH_APPLICATION_ID")
-GITHUB_OAUTH_APPLICATION_SECRET = env.str("GITHUB_OAUTH_APPLICATION_SECRET")
+GITHUB_OAUTH_APPLICATION_ID = env.str("GITHUB_OAUTH_APPLICATION_ID", default=None)
+GITHUB_OAUTH_APPLICATION_SECRET = env.str("GITHUB_OAUTH_APPLICATION_SECRET", default=None)

@@ -18,9 +18,13 @@ class HomePageView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["agreement"] = markdown.markdown(
-            Agreement.objects.filter(default=True).first().document
-        )
+        default_agreement = Agreement.objects.filter(default=True).first()
+        if default_agreement:
+            context["agreement"] = markdown.markdown(
+                default_agreement.document
+            )
+        else:
+            context["agreement"] = None
         return context
 
 
