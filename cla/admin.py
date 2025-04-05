@@ -33,7 +33,8 @@ class RepositoryMappingAdmin(admin.ModelAdmin):
 
 
 class SignatureAdmin(admin.ModelAdmin):
-    list_display = ["github_login", "email_address", "agreement"]
+    list_display = ["github_login", "email_address", "created_at", "agreement"]
+    search_fields = ["github_login", "email_address"]
     readonly_fields = [
         "agreement",
         "github_login",
@@ -42,6 +43,8 @@ class SignatureAdmin(admin.ModelAdmin):
         "email_address",
         "created_at",
     ]
+    ordering = ('-created_at',)
+    list_filter = ["agreement"]
 
     def has_delete_permission(self, request, obj=None):
         return False
