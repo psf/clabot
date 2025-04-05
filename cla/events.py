@@ -69,14 +69,24 @@ async def handle_pull_request(event, gh, *args, **kwargs):
     async for commit in gh.getiter(
         f"/repos/{target_repository_full_name}/pulls/{pull_request_number}/commits"
     ):
-        authors.add(
-            Author(
-                commit["author"]["login"],
-                commit["author"]["id"],
-                commit["author"]["node_id"],
-                commit["commit"]["author"]["email"],
+        if commit["author"]:
+            authors.add(
+                Author(
+                    commit["author"]["login"],
+                    commit["author"]["id"],
+                    commit["author"]["node_id"],
+                    commit["commit"]["author"]["email"],
+                )
             )
-        )
+        elif commit["commit"]["author"]:
+            authors.add(
+                Author(
+                    commit["commit"]["author"]["name"],
+                    None,
+                    None,
+                    commit["commit"]["author"]["email"],
+                )
+            )
 
     # Find and remove any PreApprovedAccounts, they do not need to sign
     pre_approved_accounts = set()
