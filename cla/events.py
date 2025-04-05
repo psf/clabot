@@ -23,7 +23,7 @@ Author = namedtuple("Author", "login id node_id email")
 @gh.event("pull_request", action="opened")
 @gh.event("pull_request", action="reopened")
 @gh.event("pull_request", action="synchronize")
-async def handle_pull_request(event, gh, *args, **kwargs):
+async def handle_pull_request(event, gh, *args, react=True):
     github_user_id = event.data.get("pull_request").get("user", {}).get("id")
     pull_request_id = event.data.get("pull_request", {}).get("id")
     pull_request_number = event.data.get("pull_request", {}).get("number")
@@ -126,6 +126,9 @@ async def handle_pull_request(event, gh, *args, **kwargs):
             await Signature.objects.filter(
                 agreement=agreement, email_address=author.email
             ).aupdate(github_id=author.id, github_node_id=author.node_id)
+
+    if not react:
+        return
 
     # Set Commit Status Check
     if needs_signing:
