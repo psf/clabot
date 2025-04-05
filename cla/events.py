@@ -1,3 +1,4 @@
+import re
 from collections import namedtuple
 
 from django.db.models import Q
@@ -96,8 +97,10 @@ async def handle_pull_request(event, gh, *args, **kwargs):
     needs_signing = set()
     # Check for the correct Agreement Signature for each remaing author
     for author in authors:
+        normalized_email = re.sub(r"\+[^)]*@", "@", author.email)
         signature = await Signature.objects.filter(
-            agreement=agreement, email_address=author.email
+            Q(email_address__iexact=author.email)
+            | Q(normalized_email__iexact=normalized_email)
         ).afirst()
         if signature is None:
             await PendingSignature.objects.aupdate_or_create(

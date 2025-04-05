@@ -6,6 +6,22 @@ from django_github_app.models import Repository
 from markdownx.models import MarkdownxField
 
 
+class RegexpReplace(models.Func):
+    function = "regexp_replace"
+    template = "%(function)s(%(expressions)s)"
+    output_field = models.CharField()
+
+    def __init__(self, expression, pattern, replacement, flags=None, **extra):
+        expressions = [
+            expression,
+            models.Value(pattern),
+            models.Value(replacement),
+        ]
+        if flags is not None:
+            expressions.append(flags)
+        super().__init__(*expressions, **extra)
+
+
 class Agreement(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -84,6 +100,19 @@ class PendingSignature(models.Model):
     email_address = models.EmailField(max_length=512)
 
 
+class SignatureManager(models.Manager):
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .annotate(
+                normalized_email=RegexpReplace(
+                    "email_address", r"\+[^)]*@(?!users.noreply.github.com)", "@"
+                )
+            )
+        )
+
+
 class Signature(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -98,3 +127,5 @@ class Signature(models.Model):
 
     def __str__(self):
         return f"{self.email_address} - {self.agreement.title}"
+
+    objects = SignatureManager()

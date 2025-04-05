@@ -33,8 +33,13 @@ class RepositoryMappingAdmin(admin.ModelAdmin):
 
 
 class SignatureAdmin(admin.ModelAdmin):
-    list_display = ["github_login", "email_address", "created_at", "agreement"]
-    search_fields = ["github_login", "email_address"]
+    list_display = [
+        "github_login",
+        "email_address",
+        "created_at",
+        "agreement",
+    ]
+    search_fields = ["github_login", "email_address", "normalized_email"]
     readonly_fields = [
         "agreement",
         "github_login",
@@ -42,9 +47,13 @@ class SignatureAdmin(admin.ModelAdmin):
         "github_node_id",
         "email_address",
         "created_at",
+        "normalized_email",
     ]
-    ordering = ('-created_at',)
+    ordering = ("-created_at",)
     list_filter = ["agreement"]
+
+    def normalized_email(self, obj):
+        return obj.normalized_email
 
     def has_delete_permission(self, request, obj=None):
         return False
