@@ -1,5 +1,11 @@
+# Dev
 black
 daphne
+flake8
+isort
+pip-tools
+
+# Base
 dj-database-url
 django
 django-github-app

@@ -20,6 +20,8 @@ automat==24.8.1
     # via twisted
 black==25.1.0
     # via -r requirements.in
+build==1.2.2.post1
+    # via pip-tools
 cachetools==5.5.2
     # via django-github-app
 certifi==2025.1.31
@@ -36,6 +38,7 @@ click==8.1.8
     # via
     #   black
     #   django-typer
+    #   pip-tools
     #   typer-slim
     #   uvicorn
 constantly==23.10.4
@@ -65,6 +68,8 @@ django-typer[rich]==3.1.0
     # via django-github-app
 environs==14.1.1
     # via -r requirements.in
+flake8==7.2.0
+    # via -r requirements.in
 gidgethub==5.3.0
     # via django-github-app
 gunicorn==23.0.0
@@ -90,12 +95,16 @@ idna==3.10
     #   twisted
 incremental==24.7.2
     # via twisted
+isort==6.0.1
+    # via -r requirements.in
 markdown==3.7
     # via django-markdownx
 markdown-it-py==3.0.0
     # via rich
 marshmallow==3.26.1
     # via environs
+mccabe==0.7.0
+    # via flake8
 mdurl==0.1.2
     # via markdown-it-py
 mypy-extensions==1.0.0
@@ -105,12 +114,15 @@ oauthlib==3.2.2
 packaging==24.2
     # via
     #   black
+    #   build
     #   gunicorn
     #   marshmallow
 pathspec==0.12.1
     # via black
 pillow==11.1.0
     # via django-markdownx
+pip-tools==7.4.1
+    # via -r requirements.in
 platformdirs==4.3.7
     # via black
 psycopg2-binary==2.9.10
@@ -121,8 +133,12 @@ pyasn1==0.6.1
     #   service-identity
 pyasn1-modules==0.4.2
     # via service-identity
+pycodestyle==2.13.0
+    # via flake8
 pycparser==2.22
     # via cffi
+pyflakes==3.3.2
+    # via flake8
 pygments==2.19.1
     # via rich
 pyjwt[crypto]==2.10.1
@@ -131,6 +147,10 @@ pyjwt[crypto]==2.10.1
     #   pyjwt
 pyopenssl==25.0.0
     # via twisted
+pyproject-hooks==1.2.0
+    # via
+    #   build
+    #   pip-tools
 python-dotenv==1.1.0
     # via environs
 requests==2.32.3
@@ -166,10 +186,13 @@ urllib3==2.3.0
     #   sentry-sdk
 uvicorn==0.34.0
     # via -r requirements.in
+wheel==0.45.1
+    # via pip-tools
 whitenoise==6.9.0
     # via -r requirements.in
 zope-interface==7.2
     # via twisted
 
 # The following packages are considered to be unsafe in a requirements file:
+# pip
 # setuptools

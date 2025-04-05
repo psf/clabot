@@ -8,7 +8,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -65,7 +64,11 @@ class Migration(migrations.Migration):
                 (
                     "document",
                     markdownx.models.MarkdownxField(
-                        help_text="The document that contributors will sign <b>cannot</b> be edited or deleted after it has been created. You will have to draft, save, and assign a new document"
+                        help_text=(
+                            "The document that contributors will sign "
+                            "<b>cannot</b> be edited or deleted after it has been created. "
+                            "You will have to draft, save, and assign a new document"
+                        )
                     ),
                 ),
                 ("default", models.BooleanField(default=False)),

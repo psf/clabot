@@ -27,9 +27,7 @@ async def handle_pull_request(event, gh, *args, **kwargs):
     github_user_id = event.data.get("pull_request").get("user", {}).get("id")
     pull_request_id = event.data.get("pull_request", {}).get("id")
     pull_request_number = event.data.get("pull_request", {}).get("number")
-    pull_request_head_sha = (
-        event.data.get("pull_request", {}).get("head", {}).get("sha")
-    )
+    pull_request_head_sha = event.data.get("pull_request", {}).get("head", {}).get("sha")
     pull_request_url = event.data.get("pull_request", {}).get("html_url")
     target_repository_id = event.data.get("repository", {}).get("id")
     target_repository_full_name = event.data.get("repository", {}).get("full_name")
@@ -99,8 +97,7 @@ async def handle_pull_request(event, gh, *args, **kwargs):
     for author in authors:
         normalized_email = re.sub(r"\+[^)]*@", "@", author.email)
         signature = await Signature.objects.filter(
-            Q(email_address__iexact=author.email)
-            | Q(normalized_email__iexact=normalized_email)
+            Q(email_address__iexact=author.email) | Q(normalized_email__iexact=normalized_email)
         ).afirst()
         if signature is None:
             await PendingSignature.objects.aupdate_or_create(
@@ -119,9 +116,7 @@ async def handle_pull_request(event, gh, *args, **kwargs):
     if needs_signing:
         await fail_status_check(gh, target_repository_full_name, pull_request_head_sha)
     else:
-        await succeed_status_check(
-            gh, target_repository_full_name, pull_request_head_sha
-        )
+        await succeed_status_check(gh, target_repository_full_name, pull_request_head_sha)
 
     # Send/Update comments
     if needs_signing:
@@ -130,6 +125,4 @@ async def handle_pull_request(event, gh, *args, **kwargs):
             gh, email_addresses, target_repository_full_name, pull_request_number
         )
     else:
-        await post_or_update_success_comment(
-            gh, target_repository_full_name, pull_request_number
-        )
+        await post_or_update_success_comment(gh, target_repository_full_name, pull_request_number)

@@ -80,9 +80,7 @@ class RepositoryMapping(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    github_repository = models.ForeignKey(
-        Repository, null=True, on_delete=models.SET_NULL
-    )
+    github_repository = models.ForeignKey(Repository, null=True, on_delete=models.SET_NULL)
     agreement = models.ForeignKey(Agreement, on_delete=models.PROTECT)
 
     def __str__(self):

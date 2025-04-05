@@ -20,9 +20,7 @@ class HomePageView(TemplateView):
         context = super().get_context_data(**kwargs)
         default_agreement = Agreement.objects.filter(default=True).first()
         if default_agreement:
-            context["agreement"] = markdown.markdown(
-                default_agreement.document
-            )
+            context["agreement"] = markdown.markdown(default_agreement.document)
         else:
             context["agreement"] = None
         return context
@@ -59,12 +57,8 @@ async def sign(request):
         return HttpResponseRedirect("/")
 
     emails = await sync_to_async(request.session.get)("emails")
-    if email_address.lower() not in [
-        e["email"].lower() for e in emails if e["verified"]
-    ]:
-        messages.info(
-            request, "Cannot sign using an email that has not been verified on GitHub."
-        )
+    if email_address.lower() not in [e["email"].lower() for e in emails if e["verified"]]:
+        messages.info(request, "Cannot sign using an email that has not been verified on GitHub.")
         return HttpResponseRedirect("/")
 
     if request.method == "POST":
@@ -83,9 +77,7 @@ async def sign(request):
                 agreement_id=agreement_id, email_address__iexact=email_address
             ).all()
         ):
-            to_resolve[pending_signature.github_repository_id].add(
-                pending_signature.ref
-            )
+            to_resolve[pending_signature.github_repository_id].add(pending_signature.ref)
         for repository_id, refs in to_resolve.items():
             repository = await Repository.objects.select_related("installation").aget(
                 repository_id=repository_id

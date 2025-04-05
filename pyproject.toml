@@ -1,0 +1,6 @@
+[tool.black]
+exclude = "migrations"
+line-length = 99
+[tool.isort]
+profile = "black"
+skip_glob = ["*/migrations/*"]
