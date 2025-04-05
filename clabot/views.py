@@ -11,6 +11,7 @@ from django_github_app.models import Repository
 
 from cla.events import handle_pull_request
 from cla.models import Agreement, PendingSignature, Signature
+from clabot.forms import SignEmailForm
 
 
 class HomePageView(TemplateView):
@@ -44,6 +45,16 @@ async def sign(request):
     agreement_id = request.GET.get("agreement_id")
     email_address = request.GET.get("email_address")
 
+    form = None
+    if email_address.endswith("@users.noreply.github.com"):
+        form = SignEmailForm(request.POST or None)
+        _emails = await sync_to_async(request.session.get)("emails", [])
+        form.fields["email"].choices = [("", "---")] + [
+            (e["email"], e["email"])
+            for e in _emails
+            if e["verified"] and not e["email"].endswith("@users.noreply.github.com")
+        ]
+
     pending_signatures = await sync_to_async(list)(
         PendingSignature.objects.filter(
             agreement_id=agreement_id, email_address__iexact=email_address
@@ -62,6 +73,20 @@ async def sign(request):
         return HttpResponseRedirect("/")
 
     if request.method == "POST":
+        if form:
+            if form.is_valid():
+                email_address = form.cleaned_data["email"]
+            else:
+                return render(
+                    request,
+                    "sign.html",
+                    context={
+                        "agreement": markdown.markdown(pending_signatures[0].agreement.document),
+                        "email_address": email_address,
+                        "form": form,
+                    },
+                )
+
         agreement = pending_signatures[0].agreement
         await Signature.objects.acreate(
             agreement=agreement,
@@ -116,5 +141,6 @@ async def sign(request):
         context={
             "agreement": markdown.markdown(pending_signatures[0].agreement.document),
             "email_address": email_address,
+            "form": form,
         },
     )

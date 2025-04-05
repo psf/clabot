@@ -28,7 +28,9 @@
           </p>
         {% else %}
           <div class="button-container">
-            <a class="button" href="/sign?agreement_id={{ agreement.grouper.id }}&email_address={{ email.grouper|urlencode }}">Review and Sign</a>
+            <button>
+              <a class="button" href="/sign?agreement_id={{ agreement.grouper.id }}&email_address={{ email.grouper|urlencode }}">Review and Sign</a>
+            </button>
           </div>
         {% endif %}
       {% endfor %}

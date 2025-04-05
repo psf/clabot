@@ -99,6 +99,11 @@ async def handle_pull_request(event, gh, *args, **kwargs):
         signature = await Signature.objects.filter(
             Q(email_address__iexact=author.email) | Q(normalized_email__iexact=normalized_email)
         ).afirst()
+
+        # Look for an existing signature from an un-masked email address
+        if signature is None and author.email.endswith("@users.noreply.github.com"):
+            signature = await Signature.objects.filter(github_login=author.login).afirst()
+
         if signature is None:
             await PendingSignature.objects.aupdate_or_create(
                 agreement=agreement,

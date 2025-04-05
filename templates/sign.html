@@ -6,6 +6,16 @@
 
   <form method="POST">
     {% csrf_token %}
+    {% if form %}
+      <p>
+      {{ form.email.label_tag }}
+      {{ form.email }}<br>
+      {% if form.email.errors %}{{ form.email.errors }}{% endif %}
+      {% if form.email.help_text %}
+      <small>{{ form.email.help_text }}</small>
+      {% endif %}
+      </p>
+    {% endif %}
     <div class="button-container">
       <button type="submit" class="button sign-button">Sign</button>
       <p>

@@ -45,17 +45,27 @@ def github_callback(request):
     user_data = requests.get(
         "https://api.github.com/user",
         headers={"Authorization": f'token {client.token["access_token"]}'},
-    )
+    ).json()
     user_email_data = requests.get(
         "https://api.github.com/user/emails",
         headers={"Authorization": f'token {client.token["access_token"]}'},
-    )
+    ).json()
 
-    request.session["username"] = user_data.json()["login"]
-    request.session["emails"] = user_email_data.json()
+    email_username = user_data["login"]
+    email_user_id = user_data["id"]
+    request.session["emails"] = user_email_data + [
+        {
+            "email": f"{email_user_id}+{email_username}@users.noreply.github.com",
+            "verified": True,
+        },
+        {
+            "email": f"{email_username}@users.noreply.github.com",
+            "verified": True,
+        },
+    ]
 
-    request.session["github_login"] = user_data.json()["login"]
-    request.session["github_id"] = user_data.json()["id"]
-    request.session["github_node_id"] = user_data.json()["node_id"]
+    request.session["github_login"] = user_data["login"]
+    request.session["github_id"] = user_data["id"]
+    request.session["github_node_id"] = user_data["node_id"]
 
     return HttpResponseRedirect("/awaiting/")
