@@ -23,7 +23,7 @@ Author = namedtuple("Author", "login id node_id email")
 @gh.event("pull_request", action="opened")
 @gh.event("pull_request", action="reopened")
 @gh.event("pull_request", action="synchronize")
-async def handle_pull_request(event, gh, *args, **kwargs):
+async def handle_pull_request(event, gh, *args, react=True):
     github_user_id = event.data.get("pull_request").get("user", {}).get("id")
     pull_request_id = event.data.get("pull_request", {}).get("id")
     pull_request_number = event.data.get("pull_request", {}).get("number")
@@ -127,17 +127,22 @@ async def handle_pull_request(event, gh, *args, **kwargs):
                 agreement=agreement, email_address=author.email
             ).aupdate(github_id=author.id, github_node_id=author.node_id)
 
-    # Set Commit Status Check
-    if needs_signing:
-        await fail_status_check(gh, target_repository_full_name, pull_request_head_sha)
-    else:
-        await succeed_status_check(gh, target_repository_full_name, pull_request_head_sha)
+    if react:
+        # Set Commit Status Check
+        if needs_signing:
+            await fail_status_check(gh, target_repository_full_name, pull_request_head_sha)
+        else:
+            await succeed_status_check(gh, target_repository_full_name, pull_request_head_sha)
 
-    # Send/Update comments
-    if needs_signing:
-        email_addresses = [author.email for author in needs_signing]
-        await post_or_update_fail_comment(
-            gh, email_addresses, target_repository_full_name, pull_request_number
-        )
-    else:
-        await post_or_update_success_comment(gh, target_repository_full_name, pull_request_number)
+        # Send/Update comments
+        if needs_signing:
+            email_addresses = [author.email for author in needs_signing]
+            await post_or_update_fail_comment(
+                gh, email_addresses, target_repository_full_name, pull_request_number
+            )
+        else:
+            await post_or_update_success_comment(
+                gh, target_repository_full_name, pull_request_number
+            )
+
+    return needs_signing

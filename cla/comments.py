@@ -3,7 +3,7 @@ from django.conf import settings
 from cla.constants import NOT_SIGNED_BADGE, SENTINEL_MARKER, SIGNED_BADGE
 
 
-async def post_or_update_comment(gh, message, target_repository_full_name, pull_request_number):
+async def find_comment(gh, target_repository_full_name, pull_request_number):
     # Check for existing comment
     existing_comment = None
     async for comment in gh.getiter(
@@ -12,6 +12,16 @@ async def post_or_update_comment(gh, message, target_repository_full_name, pull_
         if comment["body"].endswith(SENTINEL_MARKER):
             existing_comment = comment
             break
+        elif comment["user"] == "cpython-cla-bot[bot]":
+            # TODO: remove this branch after migration
+            existing_comment = comment
+            break
+
+    return existing_comment
+
+
+async def post_or_update_comment(gh, message, target_repository_full_name, pull_request_number):
+    existing_comment = await find_comment(gh, target_repository_full_name, pull_request_number)
 
     # If we have an existing comment, update it, otherwise send the comment
     if existing_comment:
