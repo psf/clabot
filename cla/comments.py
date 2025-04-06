@@ -20,7 +20,16 @@ async def find_comment(gh, target_repository_full_name, pull_request_number):
     return existing_comment
 
 
-async def post_or_update_comment(gh, message, target_repository_full_name, pull_request_number):
+async def post_comment(gh, message, target_repository_full_name, pull_request_number):
+    await gh.post(
+        f"/repos/{target_repository_full_name}/issues/{pull_request_number}/comments",
+        data={"body": message},
+    )
+
+
+async def post_or_update_comment(
+    gh, message, target_repository_full_name, pull_request_number, post=True
+):
     existing_comment = await find_comment(gh, target_repository_full_name, pull_request_number)
 
     # If we have an existing comment, update it, otherwise send the comment
@@ -30,11 +39,8 @@ async def post_or_update_comment(gh, message, target_repository_full_name, pull_
                 f"/repos/{target_repository_full_name}/issues/comments/{existing_comment['id']}",
                 data={"body": message},
             )
-    else:
-        await gh.post(
-            f"/repos/{target_repository_full_name}/issues/{pull_request_number}/comments",
-            data={"body": message},
-        )
+    elif post:
+        await post_comment(gh, message, target_repository_full_name, pull_request_number)
 
 
 async def post_or_update_fail_comment(
@@ -51,10 +57,12 @@ async def post_or_update_fail_comment(
     await post_or_update_comment(gh, message, target_repository_full_name, pull_request_number)
 
 
-async def post_or_update_success_comment(gh, target_repository_full_name, pull_request_number):
+async def update_success_comment(gh, target_repository_full_name, pull_request_number):
     message = (
         "All commit authors signed the Contributor License Agreement.\n\n"
         f"[![CLA signed]({SIGNED_BADGE})]({settings.SITE_URL})"
         f"{SENTINEL_MARKER}"
     )
-    await post_or_update_comment(gh, message, target_repository_full_name, pull_request_number)
+    await post_or_update_comment(
+        gh, message, target_repository_full_name, pull_request_number, post=False
+    )

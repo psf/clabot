@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django_github_app.routing import GitHubRouter
 
-from cla.comments import post_or_update_fail_comment, post_or_update_success_comment
+from cla.comments import post_or_update_fail_comment, update_success_comment
 from cla.models import (
     Agreement,
     PendingSignature,
@@ -151,8 +151,6 @@ async def handle_pull_request(event, gh, *args, react=True):
                 gh, email_addresses, target_repository_full_name, pull_request_number
             )
         else:
-            await post_or_update_success_comment(
-                gh, target_repository_full_name, pull_request_number
-            )
+            await update_success_comment(gh, target_repository_full_name, pull_request_number)
 
     return needs_signing
