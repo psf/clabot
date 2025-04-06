@@ -1,6 +1,9 @@
 import re
 from collections import namedtuple
 
+import gidgethub
+import httpx
+import stamina
 from django.db.models import Q
 from django.http import HttpResponse
 from django_github_app.routing import GitHubRouter
@@ -23,6 +26,8 @@ Author = namedtuple("Author", "login id node_id email")
 @gh.event("pull_request", action="opened")
 @gh.event("pull_request", action="reopened")
 @gh.event("pull_request", action="synchronize")
+@stamina.retry(on=gidgethub.GitHubException)
+@stamina.retry(on=httpx.HTTPError)
 async def handle_pull_request(event, gh, *args, react=True):
     github_user_id = event.data.get("pull_request").get("user", {}).get("id")
     pull_request_id = event.data.get("pull_request", {}).get("id")
