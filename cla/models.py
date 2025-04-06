@@ -38,6 +38,7 @@ class Agreement(models.Model):
     )
 
     default = models.BooleanField(default=False)
+    compatible = models.ManyToManyField("Agreement", blank=True)
 
     def __str__(self):
         return self.title

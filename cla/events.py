@@ -111,9 +111,14 @@ async def handle_pull_request(event, gh, *args, react=True):
     # Check for the correct Agreement Signature for each remaing author
     for author in authors:
         normalized_email = re.sub(r"\+[^)]*@", "@", author.email)
-        signature = await Signature.objects.filter(
-            Q(email_address__iexact=author.email) | Q(normalized_email__iexact=normalized_email)
-        ).afirst()
+        signature = (
+            await Signature.objects.filter(
+                Q(email_address__iexact=author.email)
+                | Q(normalized_email__iexact=normalized_email)
+            )
+            .filter(Q(agreement=agreement) | Q(agreement__in=agreement.compatible.all()))
+            .afirst()
+        )
 
         # Look for an existing signature from an un-masked email address
         if signature is None and author.email.endswith("@users.noreply.github.com"):

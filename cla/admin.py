@@ -13,6 +13,7 @@ from cla.models import (
 class AgreementAdmin(admin.ModelAdmin):
     list_display = ["title", "default"]
     ordering = ["-default"]
+    filter_horizontal = ["compatible"]
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
