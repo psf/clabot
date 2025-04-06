@@ -59,7 +59,14 @@ class DashboardView(TemplateView):
 
 async def view(request, signature_id):
     signature = await Signature.objects.select_related("agreement").aget(id=signature_id)
-    return render(request, "view.html", context={"signature": signature})
+    return render(
+        request,
+        "view.html",
+        context={
+            "signature": signature,
+            "agreement_html": markdown.markdown(signature.agreement.document),
+        },
+    )
 
 
 async def sign(request):
