@@ -9,5 +9,10 @@
   <div>
     <p>Signed <b>{{ signature.created_at|date }}</b> on behalf of: <b>{{ signature.email_address }}</b></p>
   </div>
+
+  <hr>
+
+  <i>{{ signature.agreement.description }}</i>
+
 </div>
 {% endblock %}
