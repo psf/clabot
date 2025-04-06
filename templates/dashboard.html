@@ -3,13 +3,15 @@
 {% block content %}
 <div class="document-container">
   <h1>Welcome, {{ request.session.username }}.</h1>
+
+  <h2>Agreements awaiting signature</h2>
   {% if pending_signatures %}
     <p>Your contributions under the following agreements are awaiting your signature.</p>
     {% regroup pending_signatures by agreement as pending_signatures_by_agreement %}
     {% for agreement in pending_signatures_by_agreement %}
       {% regroup agreement.list by email_address as pending_for_agreement_by_email %}
+      <h3>{{ agreement.grouper }}</h3>
       {% for email in pending_for_agreement_by_email %}
-        <h2>{{ agreement.grouper }}</h2>
         {% regroup email.list by ref as pending_for_agreement_by_ref %}
         {% regroup email.list by github_repository_id as pending_for_agreement_by_repo %}
         <p>
@@ -38,5 +40,22 @@
   {% else %}
   <i>There are no pending CLAs for you to sign, have a wonderful day!</i>
   {% endif %}
+
+  <hr>
+
+  <h2>Past agreements</h2>
+  {% if existing_signatures %}
+    <p>You have signed the following CLAs in the past, using the email address listed</p>
+    {% regroup existing_signatures by agreement as existing_signatures_by_agreement %}
+    {% for agreement in existing_signatures_by_agreement %}
+      <h3>{{ agreement.grouper }}</h3>
+      {% for signature in agreement.list %}
+        <li>{{ signature.email_address }} - {{ signature.created_at|date }} (<a href="{% url 'view_signature' signature_id=signature.id %}">view</a>)</li>
+      {% endfor %}
+    {% endfor %}
+  {% else %}
+  <i>You have no past CLAs signed.</i>
+  {% endif %}
+
 </div>
 {% endblock %}

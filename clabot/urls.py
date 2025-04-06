@@ -10,6 +10,7 @@ urlpatterns = [
     path("gh/", AsyncWebhookView.as_view()),
     path("markdownx/", include("markdownx.urls")),
     path("", views.HomePageView.as_view()),
-    path("awaiting/", views.AwaitingSignatureView.as_view()),
+    path("dashboard/", views.DashboardView.as_view()),
     path("sign/", views.sign),
+    path("view/<str:signature_id>/", views.view, name="view_signature"),
 ]

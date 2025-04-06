@@ -26,7 +26,8 @@ def github_callback(request):
     code = data["code"]
     state = data["state"]
 
-    if state != request.session["state"]:
+    if state != request.session.get("state"):
+        del request.session["state"]
         messages.add_message(request, messages.ERROR, "State information mismatch!")
         return HttpResponseRedirect("/")
     else:
@@ -68,4 +69,4 @@ def github_callback(request):
     request.session["github_id"] = user_data["id"]
     request.session["github_node_id"] = user_data["node_id"]
 
-    return HttpResponseRedirect("/awaiting/")
+    return HttpResponseRedirect("/dashboard/")

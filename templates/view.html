@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="document-container">
+  {{ signature.agreement|safe }}
+
+  <hr>
+
+  <div>
+    <p>Signed <b>{{ signature.created_at|date }}</b> on behalf of: <b>{{ signature.email_address }}</b></p>
+  </div>
+</div>
+{% endblock %}

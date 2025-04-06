@@ -2,13 +2,24 @@
 
 {% block content %}
 <div class="document-container">
-  {% if agreement %}
-    {{ agreement|safe }}
-  {% else %}
-    <i>No Default Agreement</i>
-  {% endif %}
-</div>
-<div class="button-container">
-  <a class="button" href="/auth/">Sign In With GitHub To Agree</a>
+  <h1>Contributor License Agreement Management</h1>
+
+  <br>
+  <div class="button-container">
+    <a class="button" href="/auth/">Sign In With GitHub</a>
+  </div>
+  <br>
+
+  <p>
+    This application allows you to sign and view past signatures of Contributor License Agreements
+    as required by the following repositories:
+  </p>
+
+  <ul>
+    {% for repository in repositories %}
+    <li>{{ repository }}</li>
+    {% endfor %}
+  </ul>
+
 </div>
 {% endblock %}

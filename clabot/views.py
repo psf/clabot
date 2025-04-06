@@ -1,16 +1,18 @@
+import re
 from collections import defaultdict, namedtuple
 
 import markdown
 from asgiref.sync import sync_to_async
 from django.contrib import messages
+from django.db.models import Q
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.views.generic import TemplateView
 from django_github_app.github import AsyncGitHubAPI
 from django_github_app.models import Repository
 
 from cla.events import handle_pull_request
-from cla.models import Agreement, PendingSignature, Signature
+from cla.models import PendingSignature, Signature
 from clabot.forms import SignEmailForm
 
 
@@ -19,16 +21,18 @@ class HomePageView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        default_agreement = Agreement.objects.filter(default=True).first()
-        if default_agreement:
-            context["agreement"] = markdown.markdown(default_agreement.document)
-        else:
-            context["agreement"] = None
+        context["repositories"] = Repository.objects.all()
         return context
 
 
-class AwaitingSignatureView(TemplateView):
-    template_name = "awaiting_signature.html"
+class DashboardView(TemplateView):
+    template_name = "dashboard.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.session.get("github_id") is None:
+            messages.info(request, "Please signin first.")
+            return redirect("/")
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -38,7 +42,24 @@ class AwaitingSignatureView(TemplateView):
         context["verified_emails"] = [
             e["email"].lower() for e in self.request.session["emails"] if e["verified"]
         ]
+        context["existing_signatures"] = Signature.objects.filter(
+            Q(github_login=self.request.session["github_login"])
+            | Q(github_id=self.request.session["github_id"])
+            | Q(github_node_id=self.request.session["github_node_id"])
+            | Q(
+                normalized_email__in=[
+                    re.sub(r"\+[^)]*@", "@", e["email"])
+                    for e in self.request.session["emails"]
+                    if e["verified"]
+                ]
+            )
+        )
         return context
+
+
+async def view(request, signature_id):
+    signature = await Signature.objects.select_related("agreement").aget(id=signature_id)
+    return render(request, "view.html", context={"signature": signature})
 
 
 async def sign(request):
@@ -133,7 +154,7 @@ async def sign(request):
             request,
             f"Successfully signed {pending_signatures[0].agreement} for {email_address}",
         )
-        return HttpResponseRedirect("/awaiting/")
+        return HttpResponseRedirect("/dashboard/")
 
     return render(
         request,
