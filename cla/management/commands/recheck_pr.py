@@ -75,75 +75,80 @@ class Command(BaseCommand):
             type=str,
             help="Full name of the repository",
         )
+        parser.add_argument("--all-repos", action="store_true", help="re-check _all_ Repos")
         parser.add_argument("--pr", type=int, help="An integer value of PR number to re-check")
-        parser.add_argument("--all", action="store_true", help="re-check _all_ PRs")
+        parser.add_argument("--all-prs", action="store_true", help="re-check _all_ PRs")
 
     async def _handle(self, *args, **options):
-        repository = await Repository.objects.select_related("installation").aget(
-            full_name=options["repo"]
-        )
-        installation = repository.installation
+        if options["all_repos"]:
+            repositories = Repository.objects.select_related("installation")
+        else:
+            repositories = Repository.objects.select_related("installation").filter(
+                full_name=options["repo"]
+            )
 
-        async with AsyncGitHubAPITimeout("clabot", installation=installation) as gh:
-            if options["all"]:
-                owner, _, repo = repository.full_name.partition("/")
-                cursor = None
-                while True:
-                    for attempt in stamina.retry_context(on=httpx.HTTPError):
-                        with attempt:
-                            prs = await gh.graphql(
-                                GRAPHQL_QUERY,
-                                checkName="CLA Signing",
-                                owner=owner,
-                                repo=repo,
-                                cursor=cursor,
-                                count=50,
-                            )
-                    for pr in prs["repository"]["pullRequests"]["nodes"]:
-                        number = pr["number"]
-                        contexts = pr["commits"]["nodes"][0]["commit"]["statusCheckRollup"][
-                            "contexts"
-                        ]["nodes"]
-                        status_checks = [
-                            context
-                            for context in contexts
-                            if context.get("context", None) == "CLA Signing"
-                        ]
-                        if status_checks and status_checks[0]["state"] == "FAILURE":
-                            pull = await gh.getitem(
-                                f"/repos/{repository.full_name}/pulls/{number}"
-                            )
-                            await handle_pull_request(
-                                namedtuple("Event", "data")(
-                                    {
-                                        "pull_request": pull,
-                                        "repository": {
-                                            "id": repository.repository_id,
-                                            "full_name": repository.full_name,
-                                        },
-                                    }
-                                ),
-                                gh,
-                            )
-                            print(f"Re-checked {repository.full_name} #{pull['number']}")
-                    cursor = prs["repository"]["pullRequests"]["pageInfo"]["endCursor"]
-                    if not prs["repository"]["pullRequests"]["pageInfo"]["hasNextPage"]:
-                        break
-            else:
-                pull = await gh.getitem(f"/repos/{repository.full_name}/pulls/{options['pr']}")
-                await handle_pull_request(
-                    namedtuple("Event", "data")(
-                        {
-                            "pull_request": pull,
-                            "repository": {
-                                "id": repository.repository_id,
-                                "full_name": repository.full_name,
-                            },
-                        }
-                    ),
-                    gh,
-                )
-                print(f"Re-checked {repository.full_name} #{options['pr']}")
+        async for repository in repositories:
+            installation = repository.installation
+            async with AsyncGitHubAPITimeout("clabot", installation=installation) as gh:
+                if options["all_prs"]:
+                    owner, _, repo = repository.full_name.partition("/")
+                    cursor = None
+                    while True:
+                        for attempt in stamina.retry_context(on=httpx.HTTPError):
+                            with attempt:
+                                prs = await gh.graphql(
+                                    GRAPHQL_QUERY,
+                                    checkName="CLA Signing",
+                                    owner=owner,
+                                    repo=repo,
+                                    cursor=cursor,
+                                    count=50,
+                                )
+                        for pr in prs["repository"]["pullRequests"]["nodes"]:
+                            number = pr["number"]
+                            contexts = pr["commits"]["nodes"][0]["commit"]["statusCheckRollup"][
+                                "contexts"
+                            ]["nodes"]
+                            status_checks = [
+                                context
+                                for context in contexts
+                                if context.get("context", None) == "CLA Signing"
+                            ]
+                            if status_checks and status_checks[0]["state"] == "FAILURE":
+                                pull = await gh.getitem(
+                                    f"/repos/{repository.full_name}/pulls/{number}"
+                                )
+                                await handle_pull_request(
+                                    namedtuple("Event", "data")(
+                                        {
+                                            "pull_request": pull,
+                                            "repository": {
+                                                "id": repository.repository_id,
+                                                "full_name": repository.full_name,
+                                            },
+                                        }
+                                    ),
+                                    gh,
+                                )
+                                print(f"Re-checked {repository.full_name} #{pull['number']}")
+                        cursor = prs["repository"]["pullRequests"]["pageInfo"]["endCursor"]
+                        if not prs["repository"]["pullRequests"]["pageInfo"]["hasNextPage"]:
+                            break
+                else:
+                    pull = await gh.getitem(f"/repos/{repository.full_name}/pulls/{options['pr']}")
+                    await handle_pull_request(
+                        namedtuple("Event", "data")(
+                            {
+                                "pull_request": pull,
+                                "repository": {
+                                    "id": repository.repository_id,
+                                    "full_name": repository.full_name,
+                                },
+                            }
+                        ),
+                        gh,
+                    )
+                    print(f"Re-checked {repository.full_name} #{options['pr']}")
 
     def handle(self, *args, **options):
         loop = asyncio.get_event_loop()
