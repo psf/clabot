@@ -41,20 +41,25 @@ class SignatureAdmin(admin.ModelAdmin):
         "agreement",
     ]
     search_fields = ["github_login", "email_address", "normalized_email"]
-    readonly_fields = [
-        "agreement",
-        "github_login",
-        "github_id",
-        "github_node_id",
-        "email_address",
-        "created_at",
-        "normalized_email",
-    ]
     ordering = ("-created_at",)
     list_filter = ["agreement"]
 
     def normalized_email(self, obj):
         return obj.normalized_email
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj is not None:
+            return [
+                "agreement",
+                "github_login",
+                "github_id",
+                "github_node_id",
+                "email_address",
+                "created_at",
+                "normalized_email",
+            ]
+        else:
+            return []
 
     def has_delete_permission(self, request, obj=None):
         return False
