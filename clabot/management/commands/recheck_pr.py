@@ -7,6 +7,7 @@ import stamina
 from django.core.management.base import BaseCommand
 from django_github_app.github import AsyncGitHubAPI
 from django_github_app.models import Repository
+from gidgethub import GitHubBroken
 from gidgethub import abc as gh_abc
 
 from cla.events import handle_pull_request
@@ -68,6 +69,14 @@ query ($owner: String!, $repo: String!, $cursor: String, $count: Int) {
 """
 
 
+def _graphql_retryable(exc):
+    if isinstance(exc, httpx.HTTPError):
+        return True
+    if isinstance(exc, GitHubBroken):
+        return True
+    return False
+
+
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
@@ -94,7 +103,7 @@ class Command(BaseCommand):
                     owner, _, repo = repository.full_name.partition("/")
                     cursor = None
                     while True:
-                        for attempt in stamina.retry_context(on=httpx.HTTPError):
+                        for attempt in stamina.retry_context(on=_graphql_retryable):
                             with attempt:
                                 prs = await gh.graphql(
                                     GRAPHQL_QUERY,
@@ -102,7 +111,7 @@ class Command(BaseCommand):
                                     owner=owner,
                                     repo=repo,
                                     cursor=cursor,
-                                    count=50,
+                                    count=33,
                                 )
                         for pr in prs["repository"]["pullRequests"]["nodes"]:
                             number = pr["number"]
