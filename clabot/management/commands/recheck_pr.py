@@ -129,6 +129,7 @@ class Command(BaseCommand):
                                         }
                                     ),
                                     gh,
+                                    immediate=True,
                                 )
                                 print(f"Re-checked {repository.full_name} #{pull['number']}")
                         cursor = prs["repository"]["pullRequests"]["pageInfo"]["endCursor"]
@@ -147,6 +148,7 @@ class Command(BaseCommand):
                             }
                         ),
                         gh,
+                        immediate=True,
                     )
                     print(f"Re-checked {repository.full_name} #{options['pr']}")
 

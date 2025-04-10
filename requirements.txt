@@ -59,10 +59,16 @@ django==5.2
     #   dj-database-url
     #   django-github-app
     #   django-markdownx
+    #   django-stubs-ext
+    #   django-tasks
     #   django-typer
 django-github-app==0.5.0
     # via -r requirements.in
 django-markdownx==4.0.7
+    # via -r requirements.in
+django-stubs-ext==5.1.3
+    # via django-tasks
+django-tasks==0.6.1
     # via -r requirements.in
 django-typer[rich]==3.1.0
     # via django-github-app
@@ -180,6 +186,8 @@ typer-slim==0.15.2
 typing-extensions==4.13.0
     # via
     #   dj-database-url
+    #   django-stubs-ext
+    #   django-tasks
     #   twisted
     #   typer-slim
 uritemplate==4.1.1

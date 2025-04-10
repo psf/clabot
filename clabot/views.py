@@ -151,7 +151,7 @@ async def sign(request):
                                     },
                                 }
                             ),
-                            gh,
+                            None,
                         )
 
         await PendingSignature.objects.filter(

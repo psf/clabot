@@ -10,6 +10,7 @@ dj-database-url
 django
 django-github-app
 django-markdownx
+django-tasks
 environs
 gunicorn
 oauthlib

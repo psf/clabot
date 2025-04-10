@@ -46,8 +46,11 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Extensions
     "django_github_app",
+    "django_tasks",
+    "django_tasks.backends.database",
     "markdownx",
     # Our Apps
+    "clabot",
     "github_auth",
     "cla",
 ]
@@ -87,6 +90,7 @@ ASGI_APPLICATION = "clabot.asgi.application"
 
 
 DATABASES = {"default": env.dj_db_url("DATABASE_URL")}
+TASKS = {"default": {"BACKEND": "django_tasks.backends.database.DatabaseBackend"}}
 
 LANGUAGE_CODE = "en-us"
 

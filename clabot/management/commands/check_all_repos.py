@@ -34,6 +34,7 @@ class Command(BaseCommand):
                         ),
                         gh,
                         react=False,
+                        immediate=True,
                     )
                     comment = await find_comment(gh, repository.full_name, pull["number"])
                     if cla_status == "failure" and comment is None:
