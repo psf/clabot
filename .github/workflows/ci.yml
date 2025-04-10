@@ -10,5 +10,27 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - name: Dummy CI
-      run: echo "OK"
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and cache base image
+        uses: docker/bake-action@v6
+        with:
+          push: false
+          load: true
+          files: compose.yml
+          targets: base
+          set: |
+            base.cache-from=type=gha,scope=base-cached-tests
+            base.cache-to=type=gha,scope=base-cached-tests,mode=max
+
+      - name: Pull postgres
+        run: docker compose pull -q postgres
+
+      - name: Run tests
+        run: docker compose run --rm web pytest --cov --cov-report term
+
+      - name: Check DB Migrations
+        run: docker compose run --rm web ./manage.py makemigrations --check
