@@ -4,3 +4,6 @@ line-length = 99
 [tool.isort]
 profile = "black"
 skip_glob = ["*/migrations/*"]
+
+[tool.pytest.ini_options]
+addopts = "--ds=clabot.settings"
