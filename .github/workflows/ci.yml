@@ -26,6 +26,9 @@ jobs:
             base.cache-from=type=gha,scope=base-cached-tests
             base.cache-to=type=gha,scope=base-cached-tests,mode=max
 
+      - name: Lint
+        run: docker compose run --rm base bash -c "isort --check-only . && black --check . && flake8"
+
       - name: Pull postgres
         run: docker compose pull -q postgres
 
