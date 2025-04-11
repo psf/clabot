@@ -117,7 +117,7 @@ async def check_pull_request(
         authors = authors - pre_approved_accounts
 
         needs_signing = set()
-        # Check for the correct Agreement Signature for each remaing author
+        # Check for the correct Agreement Signature for each remaining author
         for author in authors:
             normalized_email = re.sub(r"\+[^)]*@", "@", author.email)
             signature = (
