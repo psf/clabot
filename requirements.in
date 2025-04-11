@@ -4,6 +4,9 @@ daphne
 flake8
 isort
 pip-tools
+pytest
+pytest-django
+pytest-cov
 
 # Base
 dj-database-url
