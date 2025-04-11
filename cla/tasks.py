@@ -130,7 +130,7 @@ async def check_pull_request(
         logging.info(f"Found {len(authors)} authors for this PR")
 
         needs_signing = set()
-        # Check for the correct Agreement Signature for each remaing author
+        # Check for the correct Agreement Signature for each remaining author
         for author in authors:
             normalized_email = re.sub(r"\+[^)]*@", "@", author.email)
             signature = (
