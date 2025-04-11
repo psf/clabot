@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 
 import environs
@@ -5,6 +6,8 @@ import environs
 # Fetch configuration from the environment
 env = environs.Env()
 env.read_env()
+
+DEBUG = env.bool("DEBUG", default=False)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -27,7 +30,43 @@ if SENTRY_DSN is not None:
         send_default_pii=True,
     )
 
-DEBUG = env.bool("DEBUG", default=False)
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "simple": {
+            "format": "%(levelname)s %(asctime)s %(name)s.%(funcName)s:%(lineno)s - %(message)s"
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "stream": sys.stdout,
+            "formatter": "simple",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+    "loggers": {
+        "": {
+            "handlers": ["console"],
+            "level": "INFO",
+        },
+        "django_tasks": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "django_tasks.backends.database.db_worker": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}
+
 
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["localhost"])
 CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=["http://localhost"])

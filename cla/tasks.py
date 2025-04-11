@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import re
 from collections import namedtuple
 from contextlib import AsyncExitStack
@@ -71,7 +72,12 @@ async def check_pull_request(
         agreement = repository_mapping.agreement
 
     if agreement is None:
+        logging.info(f"No CLA configured for {target_repository_full_name}")
         return f"No CLA configured for {target_repository_full_name}"
+
+    logging.info(
+        f"Checking {target_repository_full_name} #{pull_request_number} - " f"{pull_request_url}"
+    )
 
     async with AsyncExitStack() as stack:
         if gh is None:
@@ -121,6 +127,8 @@ async def check_pull_request(
 
         authors = authors - pre_approved_accounts
 
+        logging.info(f"Found {len(authors)} authors for this PR")
+
         needs_signing = set()
         # Check for the correct Agreement Signature for each remaing author
         for author in authors:
@@ -150,6 +158,10 @@ async def check_pull_request(
                 await Signature.objects.filter(
                     agreement=agreement, email_address=author.email
                 ).aupdate(github_id=author.id, github_node_id=author.node_id)
+
+        logging.info(f"Found {len(needs_signing)} authors without a CLA:")
+        for author in needs_signing:
+            logging.info(f"  - {author}")
 
         if react:
             # Set Commit Status Check

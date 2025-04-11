@@ -1,3 +1,4 @@
+import logging
 import re
 from collections import defaultdict, namedtuple
 
@@ -75,6 +76,7 @@ async def sign(request):
 
     form = None
     if email_address.endswith("@users.noreply.github.com"):
+        logging.info(f"Signing for noreply address: {email_address}")
         form = SignEmailForm(request.POST or None)
         _emails = await sync_to_async(request.session.get)("emails", [])
         form.fields["email"].choices = [("", "---")] + [
@@ -90,6 +92,7 @@ async def sign(request):
         .select_related("agreement")
         .all()
     )
+    logging.info(f"Found {len(pending_signatures)} PendingSignatures for {email_address}")
 
     if len(pending_signatures) == 0:
         messages.info(request, "No such agreement awaiting signature.")
@@ -97,13 +100,16 @@ async def sign(request):
 
     emails = await sync_to_async(request.session.get)("emails")
     if email_address.lower() not in [e["email"].lower() for e in emails if e["verified"]]:
+        logging.info(f"No verified email addresses for {email_address}")
         messages.info(request, "Cannot sign using an email that has not been verified on GitHub.")
         return HttpResponseRedirect("/")
 
     if request.method == "POST":
+        logging.info("Handling signature POST")
         if form:
             if form.is_valid():
                 email_address = form.cleaned_data["email"]
+                logging.info(f"Form valid for {email_address}")
             else:
                 return render(
                     request,
@@ -123,6 +129,7 @@ async def sign(request):
             github_node_id=request.session["github_node_id"],
             email_address=email_address,
         )
+        logging.info(f"Created signature {agreement} - {email_address}")
 
         to_resolve = defaultdict(set)
         for pending_signature in await sync_to_async(list)(
@@ -131,6 +138,8 @@ async def sign(request):
             ).all()
         ):
             to_resolve[pending_signature.github_repository_id].add(pending_signature.ref)
+        logging.info(f"Found {len(to_resolve)} pending signatures to resolve for {email_address}")
+
         for repository_id, refs in to_resolve.items():
             repository = await Repository.objects.select_related("installation").aget(
                 repository_id=repository_id
@@ -141,6 +150,7 @@ async def sign(request):
                     async for pull in gh.getiter(
                         f"/repos/{repository.full_name}/commits/{ref}/pulls"
                     ):
+                        logging.info(f"Updating {repository.full_name} #{pull['number']}")
                         await handle_pull_request(
                             namedtuple("Event", "data")(
                                 {
@@ -154,6 +164,7 @@ async def sign(request):
                             None,
                         )
 
+        logging.info("Cleaning up PendingSignature(s)")
         await PendingSignature.objects.filter(
             agreement_id=agreement_id, email_address__iexact=email_address
         ).adelete()
