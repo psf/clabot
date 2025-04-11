@@ -1,3 +1,4 @@
+import asyncio
 import re
 from collections import namedtuple
 from contextlib import AsyncExitStack
@@ -35,8 +36,12 @@ async def check_pull_request(
     target_repository_id=None,
     target_repository_full_name=None,
     react=False,
+    immediate=True,
     gh=None,
 ):
+    if not immediate:
+        await asyncio.sleep(5.0)
+
     if any(
         [
             not x

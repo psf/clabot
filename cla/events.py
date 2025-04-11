@@ -48,7 +48,7 @@ async def handle_pull_request(event, gh, *args, react=True, immediate=False):
     }
 
     if immediate:
-        return await check_pull_request.acall(*_args, **_kwargs, gh=gh)
+        return await check_pull_request.acall(*_args, **_kwargs, gh=gh, immediate=True)
     await check_pull_request.aenqueue(*_args, **_kwargs)
 
     return HttpResponse("OK")
