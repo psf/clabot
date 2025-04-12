@@ -1,89 +1,113 @@
-# Contributor License Agreement Bot
+Here's a refined version of your README with improved structure, clarity, and formatting:
 
-This implements a GitHub Application to manage Contributor License Agreement (CLA) signing for repositories it is installed in.
+---
 
-## Concepts
+# Contributor License Agreement (CLA) Bot  
 
-### Agreements
+A GitHub Application that manages Contributor License Agreement (CLA) signing for repositories where it's installed.
 
-Agreements are managed via Django admin, are formatted in Markdown, and are “write once”. Agreements can be marked as compatible with other agreements so that historic signatures are considered valid when applicable.
+## Key Features  
 
-### Signatures
+- **Agreement Management**:  
+  - Create and manage CLAs via Django Admin  
+  - Markdown-formatted agreements  
+  - "Write once" design to prevent modifications  
+  - Compatibility marking between agreements to honor historical signatures  
 
-Users can login to view agreements that are awaiting signature, past signatures, and the email addresses provided for past signatures.
+- **User Experience**:  
+  - Secure login to view pending agreements  
+  - Access to signature history  
+  - Email address management for past signatures  
 
-### Automation
+- **Automated Workflow**:  
+  - Monitors GitHub Pull Requests in real-time  
+  - Validates CLA signatures for all contributors  
+  - Provides clear status updates:  
+    - Commit status indicators  
+    - Automated PR comments with signing instructions  
+    - Updates existing comments when signatures are completed  
 
-When installed, this application will monitor GitHub Pull Requests for changes and determine if a CLA has been signed for all authors.
+## Development Setup  
 
-If a new signature is required, a GitHub Commit Status will be created and a comment will be created directing users to the application in order to sign.
+### Technologies Used  
+- Django  
+- django-github-app  
+- gidgethub  
+- Docker & Docker Compose  
+- GNU make  
 
-If an acceptable signature exists, a GitHub Commit Status will be created. If a past comment exists from the application it will be updated to indicate that all necessary signatures have been completed.
+### Prerequisites  
 
-## Development
+1. **GitHub Application Setup**:  
+   - Create a new GitHub App with these settings:  
+     - **Basic Information**:  
+       - App name: `My CLA Bot` (customize as needed)  
+       - Homepage URL: `https://my-cla-bot.ngrok.io`  
+       - Callback URL: `https://my-cla-bot.ngrok.io/auth/gh/`  
 
-This project is built with Django, django-github-app, and gidgethub.
+     - **Webhook**:  
+       - Active: ✓  
+       - URL: `https://my-cla-bot.ngrok.io/gh/`  
+       - Secret: Generate with:  
+         ```shell
+         python3 -c 'import secrets; print(secrets.token_urlsafe())'
+         ```  
 
-Local development uses Docker, Docker Compose, and GNU make.
+     - **Permissions**:  
+       - Repository:  
+         - Commit statuses: Read & write  
+         - Pull requests: Read & write  
+       - Organization: Members: Read-only  
+       - Account: Email addresses: Read-only  
 
-## Pre-requisites
+     - **Subscribe to Events**:  
+       - Pull request: ✓  
 
-In order to manually test the application you will first need to create a GitHub Application and have a way of accepting GitHub webhooks from the public internet, such as ngrok.
+   - Generate and securely store:  
+     - Client secret  
+     - Private key  
 
-```shell
-ngrok http 8000 -subdomain my-cla-bot
-```
+2. **Local Environment Setup**:  
+   - Use ngrok for webhook tunneling:  
+     ```shell
+     ngrok http 8000 -subdomain my-cla-bot
+     ```  
 
-Adjust the subdomain to make identifiable to you.
+   - Create `.env` file with:  
+     ```shell
+     DJANGO_ALLOWED_HOSTS=localhost,my-cla-bot.ngrok.io
+     DJANGO_CSRF_TRUSTED_ORIGINS=http://localhost:8000,https://my-cla-bot.ngrok.io
+     DJANGO_SITE_URL=https://my-cla-bot.ngrok.io/
+     GITHUB_APP_ID=<GitHub App ID>
+     GITHUB_CLIENT_ID=<GitHub Client ID>
+     GITHUB_NAME="My CLA Bot"
+     GITHUB_OAUTH_APPLICATION_ID=<GitHub Client ID>
+     GITHUB_OAUTH_APPLICATION_SECRET=<Client secret>
+     GITHUB_WEBHOOK_SECRET=<Webhook Secret>
+     GITHUB_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----
+     <Private key contents>
+     <Maintain exact formatting>
+     <No leading line break>
+     <Trailing line break required>
+     -----END RSA PRIVATE KEY-----
+     "
+     ```  
 
-Create a GitHub Application using the following settings:
-
-* GitHub App name: `My CLA Bot` (adjust to make identifiable to you)
-* Homepage URL: `https://my-cla-bot.ngrok.io` (adjust to match your ngrok subdomain)
-* Callback URL: `https://my-cla-bot.ngrok.io/auth/gh/` (adjust to match your ngrok subdomain)
-* Webhook:
-    * \[x\] Active
-    * Webhook URL: `https://my-cla-bot.ngrok.io/gh/` (adjust to match your ngrok subdomain)
-    * Secret: `aRandomlyGeneratedSecret` (consider `python3 -c 'import secrets; print(secrets.token_urlsafe())'`)
-* Permissions
-    * Repository Permissions:
-        * Commit statuses: Read and write
-        * Pull requests: Read and write
-    * Organization permissions:
-        * Members: Read-only
-    * Account permissions:
-        * Email addresses: Read-only
-* Subscribe to events:
-    * [x] Pull request
-
-“Generate a new client secret” and store it safely.
-
-“Generate a private key” and store it safely.
-
-A development environment can now be created by writing a `.env` file in the root of the repository with the following contents:
-
-```shell
-DJANGO_ALLOWED_HOSTS=localhost,my-cla-bot.ngrok.io
-DJANGO_CSRF_TRUSTED_ORIGINS=http://localhost:8000,https://my-cla-bot.ngrok.io
-DJANGO_SITE_URL=https://my-cla-bot.ngrok.io/
-GITHUB_APP_ID=<GitHub App ID>
-GITHUB_CLIENT_ID=<GitHub Client ID>
-GITHUB_NAME="My CLA Bot"
-GITHUB_OAUTH_APPLICATION_ID=<GitHub Client ID>
-GITHUB_OAUTH_APPLICATION_SECRET=<Client secret you generated above>
-GITHUB_WEBHOOK_SECRET=<Webhook Secret you generated above>
-GITHUB_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----
-<Contents of the private key GitHub generated for you>
-<Please note the formatting must match precisely>
-<NO line break at start, YES line break at end>
------END RSA PRIVATE KEY-----
-"
-```
-
-You can now start the app by running
+### Running the Application  
 
 ```shell
 make serve
-```
+```  
 
-And access it at `http://localhost:8000` or `https://my-cla-bot.ngrok.io`.
+Access at:  
+- Local: `http://localhost:8000`  
+- Public: `https://my-cla-bot.ngrok.io`  
+
+## Usage  
+
+Once installed:  
+1. The bot automatically monitors PRs  
+2. Contributors receive clear instructions for unsigned CLAs  
+3. Maintainers see real-time signature status  
+
+---
