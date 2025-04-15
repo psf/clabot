@@ -10,6 +10,7 @@ asgiref==3.8.1
     # via
     #   daphne
     #   django
+    #   servestatic
 attrs==25.3.0
     # via
     #   service-identity
@@ -181,6 +182,8 @@ rich==13.9.4
     # via django-typer
 sentry-sdk==2.25.1
     # via -r requirements.in
+servestatic==3.0.1
+    # via -r requirements.in
 service-identity==24.2.0
     # via twisted
 shellingham==1.5.4
@@ -216,8 +219,6 @@ uvicorn==0.34.0
     # via -r requirements.in
 wheel==0.45.1
     # via pip-tools
-whitenoise==6.9.0
-    # via -r requirements.in
 zope-interface==7.2
     # via twisted
 
