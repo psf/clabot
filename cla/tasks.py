@@ -144,6 +144,7 @@ async def check_pull_request(
                     github_repository_id=target_repository_id,
                     email_address=author.email,
                     ref=pull_request_head_sha,
+                    defaults={"pull_number": pull_request_number},
                 )
                 needs_signing.add(author)
             elif signature.github_id is None or signature.github_node_id is None:
