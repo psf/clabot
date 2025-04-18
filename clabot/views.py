@@ -1,5 +1,4 @@
 import logging
-import re
 from collections import defaultdict, namedtuple
 
 import markdown
@@ -14,6 +13,7 @@ from django_github_app.models import Repository
 
 from cla.events import handle_pull_request
 from cla.models import PendingSignature, Signature
+from cla.utils import normalize_email
 from clabot.forms import SignEmailForm
 
 
@@ -38,7 +38,9 @@ class DashboardView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["pending_signatures"] = PendingSignature.objects.filter(
-            email_address__in=[e["email"] for e in self.request.session["emails"]]
+            normalized_email__in=[
+                normalize_email(e["email"]) for e in self.request.session["emails"]
+            ]
         )
         context["verified_emails"] = [
             e["email"].lower() for e in self.request.session["emails"] if e["verified"]
@@ -49,7 +51,7 @@ class DashboardView(TemplateView):
             | Q(github_node_id=self.request.session["github_node_id"])
             | Q(
                 normalized_email__in=[
-                    re.sub(r"\+[^)]*@", "@", e["email"])
+                    normalize_email(e["email"])
                     for e in self.request.session["emails"]
                     if e["verified"]
                 ]
@@ -87,7 +89,7 @@ async def sign(request):
 
     pending_signatures = await sync_to_async(list)(
         PendingSignature.objects.filter(
-            agreement_id=agreement_id, email_address__iexact=email_address
+            agreement_id=agreement_id, normalized_email=normalize_email(email_address)
         )
         .select_related("agreement")
         .all()
@@ -108,7 +110,7 @@ async def sign(request):
         logging.info("Handling signature POST")
         if form:
             if form.is_valid():
-                email_address = form.cleaned_data["email"]
+                signing_email_address = form.cleaned_data["email"]
                 logging.info(f"Form valid for {email_address}")
             else:
                 return render(
@@ -120,6 +122,8 @@ async def sign(request):
                         "form": form,
                     },
                 )
+        else:
+            signing_email_address = email_address
 
         agreement = pending_signatures[0].agreement
         await Signature.objects.acreate(
@@ -128,17 +132,25 @@ async def sign(request):
             github_id=request.session["github_id"],
             github_node_id=request.session["github_node_id"],
             email_address=email_address,
+            signing_email_address=signing_email_address,
         )
         logging.info(f"Created signature {agreement} - {email_address}")
 
         to_resolve = defaultdict(set)
+        found_to_resolve = 0
         for pending_signature in await sync_to_async(list)(
             PendingSignature.objects.filter(
-                agreement_id=agreement_id, email_address__iexact=email_address
+                agreement_id=agreement_id,
+                normalized_email=normalize_email(email_address),
             ).all()
         ):
             to_resolve[pending_signature.github_repository_id].add(pending_signature.ref)
-        logging.info(f"Found {len(to_resolve)} pending signatures to resolve for {email_address}")
+            found_to_resolve += 1
+        logging.info(
+            f"Found {found_to_resolve} pending signatures "
+            f"across {len(to_resolve)} repositories "
+            "to resolve for {email_address}"
+        )
 
         for repository_id, refs in to_resolve.items():
             repository = await Repository.objects.select_related("installation").aget(
@@ -166,7 +178,7 @@ async def sign(request):
 
         logging.info("Cleaning up PendingSignature(s)")
         await PendingSignature.objects.filter(
-            agreement_id=agreement_id, email_address__iexact=email_address
+            agreement_id=agreement_id, normalized_email=normalize_email(email_address)
         ).adelete()
         messages.info(
             request,

@@ -40,12 +40,20 @@ class SignatureAdmin(admin.ModelAdmin):
         "created_at",
         "agreement",
     ]
-    search_fields = ["github_login", "email_address", "normalized_email"]
+    search_fields = [
+        "github_login",
+        "email_address",
+        "normalized_email",
+        "normalized_signing_email",
+    ]
     ordering = ("-created_at",)
     list_filter = ["agreement"]
 
     def normalized_email(self, obj):
         return obj.normalized_email
+
+    def normalized_signing_email(self, obj):
+        return obj.normalized_signing_email
 
     def get_readonly_fields(self, request, obj=None):
         if obj is not None:
@@ -55,8 +63,10 @@ class SignatureAdmin(admin.ModelAdmin):
                 "github_id",
                 "github_node_id",
                 "email_address",
+                "signing_email_address",
                 "created_at",
                 "normalized_email",
+                "normalized_signing_email",
             ]
         else:
             return []
@@ -73,8 +83,12 @@ class PendingSignatureAdmin(admin.ModelAdmin):
         "github_repository_id",
         "ref",
         "email_address",
+        "normalized_email",
         "created_at",
     ]
+
+    def normalized_email(self, obj):
+        return obj.normalized_email
 
     def get_repository_display(self, obj=None):
         if obj:

@@ -2,15 +2,15 @@
 
 {% block content %}
 <div class="document-container">
-  <h1>Welcome, {{ request.session.username }}.</h1>
+  <h1>Welcome, {{ request.session.github_login }}.</h1>
 
   <h2>Agreements awaiting signature</h2>
   {% if pending_signatures %}
     <p>Your contributions under the following agreements are awaiting your signature.</p>
     {% regroup pending_signatures by agreement as pending_signatures_by_agreement %}
     {% for agreement in pending_signatures_by_agreement %}
-      {% regroup agreement.list by email_address as pending_for_agreement_by_email %}
       <h3>{{ agreement.grouper }}</h3>
+      {% regroup agreement.list|dictsort:"normalized_email" by normalized_email as pending_for_agreement_by_email %}
       {% for email in pending_for_agreement_by_email %}
         {% regroup email.list by ref as pending_for_agreement_by_ref %}
         {% regroup email.list by github_repository_id as pending_for_agreement_by_repo %}

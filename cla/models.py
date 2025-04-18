@@ -2,6 +2,7 @@
 import uuid
 
 from django.db import models
+from django.db.models.functions import Lower
 from django_github_app.models import Repository
 from markdownx.models import MarkdownxField
 
@@ -88,6 +89,19 @@ class RepositoryMapping(models.Model):
         return self.github_repository.full_name
 
 
+class PendingSignatureManager(models.Manager):
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .annotate(
+                normalized_email=Lower(
+                    RegexpReplace("email_address", r"\+[^)]*@(?!users.noreply.github.com)", "@")
+                )
+            )
+        )
+
+
 class PendingSignature(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -97,6 +111,7 @@ class PendingSignature(models.Model):
     github_repository_id = models.IntegerField()
     ref = models.CharField(max_length=512)
     email_address = models.EmailField(max_length=512)
+    objects = PendingSignatureManager()
 
 
 class SignatureManager(models.Manager):
@@ -105,8 +120,15 @@ class SignatureManager(models.Manager):
             super()
             .get_queryset()
             .annotate(
-                normalized_email=RegexpReplace(
-                    "email_address", r"\+[^)]*@(?!users.noreply.github.com)", "@"
+                normalized_email=Lower(
+                    RegexpReplace("email_address", r"\+[^)]*@(?!users.noreply.github.com)", "@")
+                )
+            )
+            .annotate(
+                normalized_signing_email=Lower(
+                    RegexpReplace(
+                        "signing_email_address", r"\+[^)]*@(?!users.noreply.github.com)", "@"
+                    )
                 )
             )
         )
@@ -123,6 +145,7 @@ class Signature(models.Model):
     github_id = models.IntegerField(blank=True, null=True)
     github_node_id = models.CharField(max_length=512, blank=True, null=True)
     email_address = models.EmailField(max_length=512)
+    signing_email_address = models.EmailField(max_length=512, null=True, blank=True)
 
     def __str__(self):
         return f"{self.email_address} - {self.agreement.title}"
