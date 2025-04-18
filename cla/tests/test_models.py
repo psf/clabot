@@ -53,10 +53,7 @@ class TestCLAModels:
         )
         signature = Signature.objects.create(
             agreement=agreement,
-            github_login = "username",
+            github_login="username",
             email_address=email,
         )
-        assert (
-            Signature.objects.get(id=signature.id).normalized_email
-            == normalized_email
-        )
+        assert Signature.objects.get(id=signature.id).normalized_email == normalized_email
