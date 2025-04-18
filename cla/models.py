@@ -109,8 +109,7 @@ class PendingSignature(models.Model):
 
     agreement = models.ForeignKey(Agreement, on_delete=models.PROTECT)
     github_repository_id = models.IntegerField()
-    ref = models.CharField(max_length=512)
-    pull_number = models.IntegerField(null=True)
+    pull_number = models.IntegerField()
     email_address = models.EmailField(max_length=512)
     objects = PendingSignatureManager()
 

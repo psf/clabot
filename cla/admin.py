@@ -76,12 +76,11 @@ class SignatureAdmin(admin.ModelAdmin):
 
 
 class PendingSignatureAdmin(admin.ModelAdmin):
-    list_display = ["email_address", "agreement", "get_repository_display"]
+    list_display = ["email_address", "agreement", "get_pr_display"]
     readonly_fields = [
         "agreement",
-        "get_repository_display",
+        "get_pr_display",
         "github_repository_id",
-        "ref",
         "pull_number",
         "email_address",
         "normalized_email",
@@ -91,9 +90,10 @@ class PendingSignatureAdmin(admin.ModelAdmin):
     def normalized_email(self, obj):
         return obj.normalized_email
 
-    def get_repository_display(self, obj=None):
+    def get_pr_display(self, obj=None):
         if obj:
-            return Repository.objects.get(repository_id=obj.github_repository_id)
+            repository = Repository.objects.get(repository_id=obj.github_repository_id)
+            return f"{repository.full_name} #{obj.pull_number}"
         return None
 
 
