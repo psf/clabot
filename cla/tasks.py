@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import re
 from collections import namedtuple
 from contextlib import AsyncExitStack
 
@@ -21,6 +20,7 @@ from cla.models import (
     Signature,
 )
 from cla.status import fail_status_check, succeed_status_check
+from cla.utils import normalize_email
 
 Author = namedtuple("Author", "login id node_id email")
 
@@ -132,19 +132,11 @@ async def check_pull_request(
         needs_signing = set()
         # Check for the correct Agreement Signature for each remaining author
         for author in authors:
-            normalized_email = re.sub(r"\+[^)]*@", "@", author.email)
             signature = (
-                await Signature.objects.filter(
-                    Q(email_address__iexact=author.email)
-                    | Q(normalized_email__iexact=normalized_email)
-                )
+                await Signature.objects.filter(Q(normalized_email=normalize_email(author.email)))
                 .filter(Q(agreement=agreement) | Q(agreement__in=agreement.compatible.all()))
                 .afirst()
             )
-
-            # Look for an existing signature from an un-masked email address
-            if signature is None and author.email.endswith("@users.noreply.github.com"):
-                signature = await Signature.objects.filter(github_login=author.login).afirst()
 
             if signature is None:
                 await PendingSignature.objects.aupdate_or_create(
