@@ -23,15 +23,20 @@ def github_login(request):
 
 def github_callback(request):
     data = request.GET
-    code = data["code"]
-    state = data["state"]
+    code = data.get("code")
+    state = data.get("state")
+
+    if code is None or state is None:
+        request.session.pop("state", None)
+        messages.add_message(request, messages.ERROR, "Incomplete authorization provided!")
+        return HttpResponseRedirect("/")
 
     if state != request.session.get("state"):
-        del request.session["state"]
+        request.session.pop("state", None)
         messages.add_message(request, messages.ERROR, "State information mismatch!")
         return HttpResponseRedirect("/")
     else:
-        del request.session["state"]
+        request.session.pop("state", None)
 
     client = WebApplicationClient(settings.GITHUB_OAUTH_APPLICATION_ID)
     data = client.prepare_request_body(
