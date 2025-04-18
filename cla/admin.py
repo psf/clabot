@@ -82,6 +82,7 @@ class PendingSignatureAdmin(admin.ModelAdmin):
         "get_repository_display",
         "github_repository_id",
         "ref",
+        "pull_number",
         "email_address",
         "normalized_email",
         "created_at",

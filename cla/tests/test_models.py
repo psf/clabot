@@ -26,7 +26,7 @@ class TestCLAModels:
         pending_signature = PendingSignature.objects.create(
             agreement=agreement,
             github_repository_id=1,
-            ref="deadbeef",
+            pull_number=1,
             email_address=email,
         )
         assert (

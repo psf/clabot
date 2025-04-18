@@ -144,37 +144,36 @@ async def sign(request):
                 normalized_email=normalize_email(email_address),
             ).all()
         ):
-            to_resolve[pending_signature.github_repository_id].add(pending_signature.ref)
+            to_resolve[pending_signature.github_repository_id].add(pending_signature.pull_number)
             found_to_resolve += 1
         logging.info(
             f"Found {found_to_resolve} pending signatures "
             f"across {len(to_resolve)} repositories "
-            "to resolve for {email_address}"
+            f"to resolve for {email_address}"
         )
 
-        for repository_id, refs in to_resolve.items():
+        for repository_id, pull_numbers in to_resolve.items():
+            logging.info(repository_id)
             repository = await Repository.objects.select_related("installation").aget(
                 repository_id=repository_id
             )
             installation = repository.installation
             async with AsyncGitHubAPI("clabot", installation=installation) as gh:
-                for ref in refs:
-                    async for pull in gh.getiter(
-                        f"/repos/{repository.full_name}/commits/{ref}/pulls"
-                    ):
-                        logging.info(f"Updating {repository.full_name} #{pull['number']}")
-                        await handle_pull_request(
-                            namedtuple("Event", "data")(
-                                {
-                                    "pull_request": pull,
-                                    "repository": {
-                                        "id": repository.repository_id,
-                                        "full_name": repository.full_name,
-                                    },
-                                }
-                            ),
-                            None,
-                        )
+                for pull_number in pull_numbers:
+                    pull = await gh.getitem(f"/repos/{repository.full_name}/pulls/{pull_number}")
+                    logging.info(f"Updating {repository.full_name} #{pull_number}")
+                    await handle_pull_request(
+                        namedtuple("Event", "data")(
+                            {
+                                "pull_request": pull,
+                                "repository": {
+                                    "id": repository.repository_id,
+                                    "full_name": repository.full_name,
+                                },
+                            }
+                        ),
+                        None,
+                    )
 
         logging.info("Cleaning up PendingSignature(s)")
         await PendingSignature.objects.filter(
