@@ -18,8 +18,14 @@ class AsyncWebhookView(BaseAsyncWebhookView):
     async def post(self, request: HttpRequest) -> JsonResponse:
         event = self.get_event(request)
 
-        event_log = await EventLog.objects.acreate_from_event(event)
-
-        await self.router.adispatch(event, None)
-
-        return self.get_response(event_log)
+        found_callbacks = self.router.fetch(event)
+        if found_callbacks:
+            event_log = await EventLog.objects.acreate_from_event(event)
+            await self.router.adispatch(event, None)
+            return self.get_response(event_log)
+        else:
+            return JsonResponse(
+                {
+                    "message": "ok",
+                }
+            )
