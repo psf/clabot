@@ -1,5 +1,7 @@
 FROM python:3.13-alpine
 
+RUN apk add --no-cache bash
+
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 RUN mkdir /code
