@@ -1,12 +1,4 @@
-FROM python:3.13-bullseye
-
-#RUN set -eux; \
-#    rm -f /etc/apt/apt.conf.d/docker-clean; \
-#    echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache;
-#RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-#    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-#    apt-get update \
-#    && apt-get install -y gettext binutils libproj-dev gdal-bin
+FROM python:3.13-alpine
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
