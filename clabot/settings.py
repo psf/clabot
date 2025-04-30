@@ -162,6 +162,7 @@ GITHUB_APP = {
     "WEBHOOK_SECRET": env.str("GITHUB_WEBHOOK_SECRET", default=None),
     "WEBHOOK_TYPE": "async",
 }
+GITHUB_API_SLEEP = env.float("GITHUB_API_SLEEP", 1.0)
 
 # GitHub oauth
 GITHUB_OAUTH_APPLICATION_ID = env.str("GITHUB_OAUTH_APPLICATION_ID", default=None)

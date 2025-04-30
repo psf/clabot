@@ -1,3 +1,6 @@
+import asyncio
+
+from django.conf import settings
 from django.http import HttpRequest, JsonResponse
 from django_github_app._typing import override
 from django_github_app.github import AsyncGitHubAPI as BaseAsyncGitHubAPI
@@ -8,7 +11,7 @@ from django_github_app.views import AsyncWebhookView as BaseAsyncWebhookView
 class AsyncGitHubAPI(BaseAsyncGitHubAPI):
     @override
     async def sleep(self, seconds: float):
-        return None
+        await asyncio.sleep(settings.GITHUB_API_SLEEP)
 
 
 class AsyncWebhookView(BaseAsyncWebhookView):
