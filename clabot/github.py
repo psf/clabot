@@ -1,4 +1,5 @@
 import asyncio
+import logging
 
 from django.conf import settings
 from django.http import HttpRequest, JsonResponse
@@ -19,14 +20,20 @@ class AsyncWebhookView(BaseAsyncWebhookView):
 
     @override
     async def post(self, request: HttpRequest) -> JsonResponse:
+        logging.info("Handling GH Post")
         event = self.get_event(request)
 
         found_callbacks = self.router.fetch(event)
+        logging.info(f"Callbacks found: {', '.join([str(f) for f in found_callbacks])}")
         if found_callbacks:
+            logging.info("Creating EventLog")
             event_log = await EventLog.objects.acreate_from_event(event)
+            logging.info("Dispatching callbacks")
             await self.router.adispatch(event, None)
+            logging.info("Sending Response")
             return self.get_response(event_log)
         else:
+            logging.info("Sending shortcut response")
             return JsonResponse(
                 {
                     "message": "ok",
