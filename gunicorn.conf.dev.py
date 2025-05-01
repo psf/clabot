@@ -1,4 +1,4 @@
-bind = "unix:/var/run/cabotage/cabotage.sock"
+bind = "0.0.0.0:8000"
 worker_class = "clabot.workers.UvicornWorker"
 workers = 1
 

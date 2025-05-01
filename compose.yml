@@ -24,7 +24,7 @@ services:
 
   web:
     image: clabot:docker-compose
-    command: python manage.py runserver 0.0.0.0:8000
+    command: memray run --native --follow-fork -f -m gunicorn -c gunicorn.conf.dev.py clabot.asgi:application --log-file -
     environment: *base_environment
     ports:
       - "8000:8000"
