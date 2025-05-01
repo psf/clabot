@@ -6,6 +6,7 @@ from django.http import HttpRequest, JsonResponse
 from django_github_app._typing import override
 from django_github_app.github import AsyncGitHubAPI as BaseAsyncGitHubAPI
 from django_github_app.models import EventLog
+from django_github_app.routing import GitHubRouter
 from django_github_app.views import AsyncWebhookView as BaseAsyncWebhookView
 
 
@@ -17,6 +18,16 @@ class AsyncGitHubAPI(BaseAsyncGitHubAPI):
 
 class AsyncWebhookView(BaseAsyncWebhookView):
     github_api_class = AsyncGitHubAPI
+
+    @override
+    def __init__(self, **kwargs):
+        self._router = GitHubRouter(*GitHubRouter.routers)
+        return super().__init__(**kwargs)
+
+    @override
+    @property
+    def router(self):
+        return self._router
 
     @override
     async def post(self, request: HttpRequest) -> JsonResponse:
