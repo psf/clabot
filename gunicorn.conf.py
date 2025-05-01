@@ -4,8 +4,8 @@ workers = 1
 
 backlog = 2048
 preload_app = True
-#max_requests = 2048
-#max_requests_jitter = 128
+# max_requests = 2048
+# max_requests_jitter = 128
 
 timeout = 60
 keepalive = 2

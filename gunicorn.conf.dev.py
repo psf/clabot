@@ -1,11 +1,11 @@
-bind = '0.0.0.0:8000'
+bind = "0.0.0.0:8000"
 worker_class = "clabot.workers.UvicornWorker"
 workers = 1
 
 backlog = 2048
 preload_app = True
-#max_requests = 2048
-#max_requests_jitter = 128
+# max_requests = 2048
+# max_requests_jitter = 128
 
 timeout = 60
 keepalive = 2
