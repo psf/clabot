@@ -16,18 +16,16 @@ class AsyncGitHubAPI(BaseAsyncGitHubAPI):
         await asyncio.sleep(settings.GITHUB_API_SLEEP)
 
 
+_router = GitHubRouter(*GitHubRouter.routers)
+
+
 class AsyncWebhookView(BaseAsyncWebhookView):
     github_api_class = AsyncGitHubAPI
 
     @override
-    def __init__(self, **kwargs):
-        self._router = GitHubRouter(*GitHubRouter.routers)
-        return super().__init__(**kwargs)
-
-    @override
     @property
     def router(self):
-        return self._router
+        return _router
 
     @override
     async def post(self, request: HttpRequest) -> JsonResponse:
