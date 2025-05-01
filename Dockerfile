@@ -1,12 +1,13 @@
-FROM python:3.13-alpine
+FROM python:3.13
 
-RUN apk add --no-cache bash
+RUN apt install bash
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 RUN mkdir /code
 WORKDIR /code
 COPY requirements.txt /tmp/requirements.txt
+
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install -r /tmp/requirements.txt
 

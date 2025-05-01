@@ -23,3 +23,7 @@ sentry_sdk
 servestatic
 stamina
 uvicorn
+
+# Debug
+memray
+pystack

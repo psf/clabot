@@ -4,3 +4,4 @@
 /.state
 /staticfiles
 .coverage
+/memray-*
