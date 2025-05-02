@@ -1,13 +1,13 @@
 bind = "unix:/var/run/cabotage/cabotage.sock"
 worker_class = "clabot.workers.UvicornWorker"
-workers = 1
+workers = 2
 
 backlog = 2048
 preload_app = True
-# max_requests = 2048
-# max_requests_jitter = 128
+max_requests = 100_000
+max_requests_jitter = 5_000
 
-timeout = 60
+timeout = 20
 keepalive = 2
 
 errorlog = "-"
