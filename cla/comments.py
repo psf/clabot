@@ -51,7 +51,7 @@ async def post_or_update_fail_comment(
         "The following commit authors need to sign "
         "the Contributor License Agreement:\n\n"
         f"{emails}\n\n"
-        f"[![CLA signed]({NOT_SIGNED_BADGE})]({settings.SITE_URL})"
+        f"[![CLA not signed]({NOT_SIGNED_BADGE})]({settings.SITE_URL})"
         f"{SENTINEL_MARKER}"
     )
     await post_or_update_comment(gh, message, target_repository_full_name, pull_request_number)
