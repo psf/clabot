@@ -116,12 +116,12 @@ async def check_pull_request(
         # Find and remove any PreApprovedAccounts, they do not need to sign
         pre_approved_accounts = set()
         for author in authors:
-            pre_approved_account = await PreApprovedAccount.objects.filter(
-                Q(github_id=author.id)
-                | Q(github_node_id=author.node_id)
-                | Q(github_login=author.login)
-                | Q(email_address__iexact=author.email)
-            ).afirst()
+            q = Q(github_login=author.login) | Q(email_address__iexact=author.email)
+            if author.id:
+                q |= Q(github_id=author.id)
+            if author.node_id:
+                q |= Q(github_node_id=author.node_id)
+            pre_approved_account = await PreApprovedAccount.objects.filter(q).afirst()
             if pre_approved_account:
                 pre_approved_accounts.add(author)
 
