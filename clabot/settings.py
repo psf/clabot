@@ -59,7 +59,7 @@ LOGGING = {
             "level": "INFO",
             "propagate": False,
         },
-        "django_tasks.backends.database.db_worker": {
+        "django_tasks_db": {
             "handlers": ["console"],
             "level": "INFO",
             "propagate": False,
@@ -85,9 +85,9 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Extensions
     "django_github_app",
-    "django_tasks",
-    "django_tasks.backends.database",
+    "django_tasks_db",
     "markdownx",
+    "servestatic",
     # Our Apps
     "clabot",
     "github_auth",
@@ -129,7 +129,7 @@ ASGI_APPLICATION = "clabot.asgi.application"
 
 
 DATABASES = {"default": env.dj_db_url("DATABASE_URL")}
-TASKS = {"default": {"BACKEND": "django_tasks.backends.database.DatabaseBackend"}}
+TASKS = {"default": {"BACKEND": "django_tasks_db.DatabaseBackend", "QUEUES": ["default"]}}
 
 LANGUAGE_CODE = "en-us"
 
@@ -160,9 +160,8 @@ GITHUB_APP = {
     "NAME": env.str("GITHUB_NAME", default=None),
     "PRIVATE_KEY": env.str("GITHUB_PRIVATE_KEY", default=None),
     "WEBHOOK_SECRET": env.str("GITHUB_WEBHOOK_SECRET", default=None),
-    "WEBHOOK_TYPE": "async",
+    "LOG_ALL_EVENTS": False,
 }
-GITHUB_API_SLEEP = env.float("GITHUB_API_SLEEP", 1.0)
 
 # GitHub oauth
 GITHUB_OAUTH_APPLICATION_ID = env.str("GITHUB_OAUTH_APPLICATION_ID", default=None)

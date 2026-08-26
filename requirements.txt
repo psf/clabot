@@ -4,59 +4,65 @@
 #
 #    pip-compile --output-file=requirements.txt requirements.in
 #
-anyio==4.9.0
+annotated-doc==0.0.5
+    # via typer
+anyio==4.14.2
     # via httpx
-asgiref==3.8.1
+asgiref==3.12.1
     # via
     #   daphne
     #   django
     #   servestatic
-attrs==25.3.0
+attrs==26.1.0
     # via
     #   service-identity
     #   twisted
-autobahn==24.4.2
+autobahn==26.7.1
     # via daphne
-automat==24.8.1
+automat==25.4.16
     # via twisted
-black==25.1.0
+black==26.5.1
     # via -r requirements.in
-build==1.2.2.post1
+build==1.5.0
     # via pip-tools
-cachetools==5.5.2
+cachetools==7.1.7
     # via django-github-app
-certifi==2025.1.31
+cbor2==6.1.4
+    # via autobahn
+certifi==2026.7.22
     # via
     #   httpcore
     #   httpx
     #   requests
     #   sentry-sdk
-cffi==1.17.1
-    # via cryptography
-charset-normalizer==3.4.1
+cffi==2.1.1
+    # via
+    #   autobahn
+    #   cryptography
+charset-normalizer==3.5.1
     # via requests
-click==8.1.8
+click==8.4.2
     # via
     #   black
     #   django-typer
     #   pip-tools
-    #   typer-slim
+    #   typer
     #   uvicorn
 constantly==23.10.4
     # via twisted
-coverage[toml]==7.8.0
+coverage[toml]==7.15.4
     # via pytest-cov
-cryptography==44.0.2
+cryptography==50.0.1
     # via
     #   autobahn
     #   pyjwt
     #   pyopenssl
     #   service-identity
-daphne==4.1.2
+daphne==4.2.3
     # via -r requirements.in
-dj-database-url==2.3.0
+dj-database-url==3.1.2
     # via -r requirements.in
-django==5.2
+django==6.1
     # via
     #   -r requirements.in
     #   dj-database-url
@@ -64,30 +70,35 @@ django==5.2
     #   django-markdownx
     #   django-stubs-ext
     #   django-tasks
+    #   django-tasks-db
     #   django-typer
-django-github-app==0.5.0
+django-github-app==0.11.0
     # via -r requirements.in
-django-markdownx==4.0.7
+django-markdownx==4.0.11
     # via -r requirements.in
-django-stubs-ext==5.1.3
-    # via django-tasks
-django-tasks==0.6.1
+django-stubs-ext==6.1.0
+    # via
+    #   django-tasks
+    #   django-tasks-db
+django-tasks==0.12.0
+    # via django-tasks-db
+django-tasks-db==0.12.0
     # via -r requirements.in
-django-typer[rich]==3.1.0
+django-typer[rich]==3.8.0
     # via django-github-app
-environs==14.1.1
+environs==15.1.0
     # via -r requirements.in
-flake8==7.2.0
+flake8==7.3.0
     # via -r requirements.in
-gidgethub==5.3.0
+gidgethub==5.4.0
     # via django-github-app
-gunicorn==23.0.0
+gunicorn==26.2.0
     # via -r requirements.in
-h11==0.14.0
+h11==0.16.0
     # via
     #   httpcore
     #   uvicorn
-httpcore==1.0.7
+httpcore==1.0.9
     # via httpx
 httpx==0.28.1
     # via django-github-app
@@ -95,131 +106,132 @@ hyperlink==21.0.0
     # via
     #   autobahn
     #   twisted
-idna==3.10
+idna==3.19
     # via
     #   anyio
     #   httpx
     #   hyperlink
     #   requests
     #   twisted
-incremental==24.7.2
+incremental==24.11.0
     # via twisted
-iniconfig==2.1.0
+iniconfig==2.3.0
     # via pytest
-isort==6.0.1
+isort==8.0.1
     # via -r requirements.in
-markdown==3.7
+markdown==3.10.3
     # via django-markdownx
-markdown-it-py==3.0.0
+markdown-it-py==4.2.0
     # via rich
-marshmallow==3.26.1
+marshmallow==4.3.1
     # via environs
 mccabe==0.7.0
     # via flake8
 mdurl==0.1.2
     # via markdown-it-py
-mypy-extensions==1.0.0
+msgpack==1.2.1
+    # via autobahn
+mypy-extensions==1.1.0
     # via black
-oauthlib==3.2.2
+oauthlib==3.3.1
     # via -r requirements.in
-packaging==24.2
+packaging==26.3
     # via
     #   black
     #   build
-    #   gunicorn
-    #   marshmallow
+    #   incremental
     #   pytest
-pathspec==0.12.1
+    #   wheel
+pathspec==1.1.1
     # via black
-pillow==11.1.0
+pillow==12.3.0
     # via django-markdownx
 pip-tools==7.6.1
     # via -r requirements.in
-platformdirs==4.3.7
+platformdirs==4.11.4
     # via black
-pluggy==1.5.0
-    # via pytest
-psycopg2-binary==2.9.10
-    # via -r requirements.in
-pyasn1==0.6.1
+pluggy==1.6.0
     # via
-    #   pyasn1-modules
-    #   service-identity
-pyasn1-modules==0.4.2
-    # via service-identity
-pycodestyle==2.13.0
+    #   pytest
+    #   pytest-cov
+psycopg2-binary==2.9.12
+    # via -r requirements.in
+pycodestyle==2.14.0
     # via flake8
-pycparser==2.22
+pycparser==3.0
     # via cffi
-pyflakes==3.3.2
+pyflakes==3.4.0
     # via flake8
-pygments==2.19.1
-    # via rich
-pyjwt[crypto]==2.10.1
+pygments==2.21.0
+    # via
+    #   pytest
+    #   rich
+pyjwt[crypto]==2.13.0
     # via
     #   gidgethub
     #   pyjwt
-pyopenssl==25.0.0
+pyopenssl==26.4.0
     # via twisted
 pyproject-hooks==1.2.0
     # via
     #   build
     #   pip-tools
-pytest==8.3.5
+pytest==9.1.1
     # via
     #   -r requirements.in
     #   pytest-cov
     #   pytest-django
-pytest-cov==6.1.1
+pytest-cov==7.1.0
     # via -r requirements.in
-pytest-django==4.11.1
+pytest-django==4.14.0
     # via -r requirements.in
-python-dotenv==1.1.0
+python-dotenv==1.2.3
     # via environs
-requests==2.32.3
+pytokens==0.4.1
+    # via black
+requests==2.34.2
     # via -r requirements.in
-rich==13.9.4
-    # via django-typer
-sentry-sdk==2.25.1
+rich==15.0.0
+    # via typer
+sentry-sdk==2.68.1
     # via -r requirements.in
-servestatic==3.0.1
+servestatic==4.3.1
     # via -r requirements.in
-service-identity==24.2.0
+service-identity==26.1.0
     # via twisted
 shellingham==1.5.4
-    # via django-typer
-sniffio==1.3.1
-    # via anyio
-sqlparse==0.5.3
+    # via typer
+sqlparse==0.6.0
     # via django
-stamina==25.1.0
+stamina==26.1.0
     # via -r requirements.in
-tenacity==9.1.2
+tenacity==9.1.4
     # via stamina
-twisted[tls]==24.11.0
+twisted[tls]==26.4.0
     # via daphne
-txaio==23.1.1
+txaio==26.6.1
     # via autobahn
-typer-slim==0.15.2
+typer==0.25.1
     # via django-typer
-typing-extensions==4.13.0
+typing-extensions==4.16.0
     # via
-    #   dj-database-url
     #   django-stubs-ext
     #   django-tasks
+    #   django-tasks-db
     #   twisted
-    #   typer-slim
-uritemplate==4.1.1
+ujson==5.13.0
+    # via autobahn
+uritemplate==4.2.0
     # via gidgethub
-urllib3==2.3.0
+urllib3==2.7.0
     # via
     #   requests
     #   sentry-sdk
-uvicorn==0.34.0
+uvicorn==0.52.4
     # via -r requirements.in
-wheel==0.45.1
+wheel==0.48.0
     # via pip-tools
-zope-interface==7.2
+zope-interface==8.6
     # via twisted
 
 # The following packages are considered to be unsafe in a requirements file:
