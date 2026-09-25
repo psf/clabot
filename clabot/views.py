@@ -42,9 +42,18 @@ class DashboardView(TemplateView):
                 normalize_email(e["email"]) for e in self.request.session["emails"]
             ]
         )
-        context["verified_emails"] = [
-            e["email"].lower() for e in self.request.session["emails"] if e["verified"]
-        ]
+        verified_emails = {}
+        for email in self.request.session["emails"]:
+            if email["verified"]:
+                address = email["email"]
+                normalized = normalize_email(address)
+                # Prefer the untagged address when it is also verified.
+                if normalized not in verified_emails or address.lower() == normalized:
+                    verified_emails[normalized] = address
+        for pending_signature in context["pending_signatures"]:
+            pending_signature.verified_email = verified_emails.get(
+                pending_signature.normalized_email
+            )
         context["existing_signatures"] = Signature.objects.filter(
             Q(github_login=self.request.session["github_login"])
             | Q(github_id=self.request.session["github_id"])

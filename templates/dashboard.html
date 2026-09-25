@@ -18,9 +18,9 @@
           For
           {{ pending_for_agreement_by_ref|length }} commits
           across {{ pending_for_agreement_by_repo|length }} repositories
-          with email address <span style="font-weight: 600;">{{ email.grouper }}</span>.
+          with email address <span style="font-weight: 600;">{{ email.list.0.verified_email|default:email.grouper }}</span>.
         </p>
-        {% if email.grouper|lower not in verified_emails  %}
+        {% if not email.list.0.verified_email %}
           <p>
             <b>
               Cannot proceed, {{ email.grouper }}
@@ -31,7 +31,7 @@
         {% else %}
           <div class="button-container">
             <button>
-              <a class="button" href="/sign?agreement_id={{ agreement.grouper.id }}&email_address={{ email.grouper|urlencode }}">Review and Sign</a>
+              <a class="button" href="/sign?agreement_id={{ agreement.grouper.id }}&email_address={{ email.list.0.verified_email|urlencode }}">Review and Sign</a>
             </button>
           </div>
         {% endif %}
