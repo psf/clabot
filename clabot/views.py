@@ -43,7 +43,7 @@ class DashboardView(TemplateView):
             ]
         )
         context["verified_emails"] = [
-            e["email"].lower() for e in self.request.session["emails"] if e["verified"]
+            normalize_email(e["email"]) for e in self.request.session["emails"] if e["verified"]
         ]
         context["existing_signatures"] = Signature.objects.filter(
             Q(github_login=self.request.session["github_login"])
@@ -101,7 +101,9 @@ async def sign(request):
         return HttpResponseRedirect("/")
 
     emails = await sync_to_async(request.session.get)("emails")
-    if email_address.lower() not in [e["email"].lower() for e in emails if e["verified"]]:
+    if normalize_email(email_address) not in [
+        normalize_email(e["email"]) for e in emails if e["verified"]
+    ]:
         logging.info(f"No verified email addresses for {email_address}")
         messages.info(request, "Cannot sign using an email that has not been verified on GitHub.")
         return HttpResponseRedirect("/")
