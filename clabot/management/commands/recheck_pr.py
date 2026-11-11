@@ -115,9 +115,12 @@ class Command(BaseCommand):
                                 )
                         for pr in prs["repository"]["pullRequests"]["nodes"]:
                             number = pr["number"]
-                            contexts = pr["commits"]["nodes"][0]["commit"]["statusCheckRollup"][
-                                "contexts"
-                            ]["nodes"]
+                            status_check_rollup = pr["commits"]["nodes"][0]["commit"][
+                                "statusCheckRollup"
+                            ]
+                            if not status_check_rollup:
+                                continue
+                            contexts = status_check_rollup["contexts"]["nodes"]
                             status_checks = [
                                 context
                                 for context in contexts
